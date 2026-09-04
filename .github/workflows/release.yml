@@ -1,0 +1,49 @@
+name: Release SDK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+concurrency:
+  group: sdk-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: sdk-sandbox
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11
+      - run: npm ci --ignore-scripts
+      - run: npm run test:release-boundary
+      - run: npm run release:plan
+      - run: npm test
+      - run: npm run test:package
+      - name: Create release pull request or publish
+        uses: changesets/action@v1
+        with:
+          publish: npm run release
+          version: npm run version-packages
+          commit: "chore(release): version packages"
+          title: "chore(release): version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AETHER_SDK_SANDBOX_TOKEN_URL: ${{ vars.AETHER_SDK_SANDBOX_TOKEN_URL }}
+          AETHER_SDK_SANDBOX_STORAGE_URL: ${{ vars.AETHER_SDK_SANDBOX_STORAGE_URL }}
+          AETHER_SDK_SANDBOX_NAMESPACE_ID: ${{ vars.AETHER_SDK_SANDBOX_NAMESPACE_ID }}
+          AETHER_SDK_SANDBOX_CLIENT_ID: ${{ secrets.AETHER_SDK_SANDBOX_CLIENT_ID }}
+          AETHER_SDK_SANDBOX_CLIENT_SECRET: ${{ secrets.AETHER_SDK_SANDBOX_CLIENT_SECRET }}

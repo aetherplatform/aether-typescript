@@ -1,0 +1,11 @@
+{
+  "name": "@aetherplatform/events",
+  "private": true,
+  "version": "0.1.0-beta.1",
+  "type": "module",
+  "files": ["dist", "README.md"],
+  "exports": {".": {"types": "./dist/index.d.ts", "import": "./dist/index.js"}},
+  "types": "./dist/index.d.ts",
+  "dependencies": {"@aetherplatform/core": "0.1.0-beta.1"},
+  "engines": {"node": ">=20"}
+}

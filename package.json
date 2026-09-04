@@ -1,0 +1,35 @@
+{
+  "name": "aether-typescript-sdk-workspace",
+  "private": true,
+  "version": "0.1.0-beta.1",
+  "license": "Apache-2.0",
+  "author": "Aether",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "generate": "bash scripts/generate.sh",
+    "check:generated": "bash scripts/check-generated.sh",
+    "clean": "rm -rf packages/*/dist",
+    "build": "npm run clean && tsc -p packages/core && tsc -p packages/identity && tsc -p packages/events && tsc -p packages/notifications && tsc -p packages/storage && tsc -p packages/webhooks",
+    "test": "npm run check:generated && npm run build && npm run check:example && node --test tests/*.test.mjs",
+    "check:example": "tsc --noEmit --strict --target ES2022 --module NodeNext --moduleResolution NodeNext --types node examples/storage-upload/index.ts",
+    "test:package": "bash scripts/test-package.sh",
+    "test:sandbox": "npm run build && node tests/sandbox-proof.mjs",
+    "test:hosted-sandbox": "npm run build && node tests/hosted-sandbox-proof.mjs",
+    "test:release-boundary": "node scripts/check-release-boundary.mjs",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release:plan": "node scripts/publish.mjs --dry-run",
+    "release": "npm run test:hosted-sandbox && node scripts/publish.mjs"
+  },
+  "devDependencies": {
+    "@changesets/cli": "2.29.7",
+    "@types/node": "22.15.3",
+    "typescript": "6.0.3"
+  }
+}

@@ -1,0 +1,4418 @@
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "Aether Identity OAuth and OpenID Connect API",
+    "version": "1.0.0",
+    "description": "OAuth 2.0 Authorization Code with PKCE and confidential server client-credentials endpoints. Hosted browser forms and internal native authentication are not SDK APIs."
+  },
+  "tags": [
+    {
+      "name": "Discovery"
+    },
+    {
+      "name": "OAuth"
+    }
+  ],
+  "paths": {
+    "/.well-known/openid-configuration": {
+      "get": {
+        "tags": [
+          "Discovery"
+        ],
+        "summary": "Read OpenID Provider metadata",
+        "operationId": "getOpenIdConfiguration",
+        "security": [
+
+        ],
+        "x-aether-token-profiles": [
+          "public"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "responses": {
+          "200": {
+            "description": "OpenID Provider metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "issuer",
+                    "authorization_endpoint",
+                    "token_endpoint",
+                    "jwks_uri",
+                    "response_types_supported",
+                    "grant_types_supported",
+                    "code_challenge_methods_supported"
+                  ],
+                  "properties": {
+                    "issuer": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "authorization_endpoint": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "token_endpoint": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "userinfo_endpoint": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "revocation_endpoint": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "introspection_endpoint": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "jwks_uri": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "response_types_supported": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "grant_types_supported": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "code_challenge_methods_supported": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "id_token_signing_alg_values_supported": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "EdDSA",
+                          "RS256"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request frequency or plan consumption was exceeded. Inspect `error.code`: `rate_limited` may be retried according to `Retry-After`; `quota_exceeded` must wait for quota reset or a plan adjustment.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Limit": {
+                "description": "Maximum requests permitted in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Remaining": {
+                "description": "Requests remaining in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Reset": {
+                "description": "UTC epoch seconds when the current rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Quota-Reset": {
+                "description": "RFC 3339 timestamp when a renewable plan quota resets, when applicable.",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "rate_limited"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "quota_exceeded"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Aether could not complete the request because of an internal failure.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required authentication or platform dependency is unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/jwks.json": {
+      "get": {
+        "tags": [
+          "Discovery"
+        ],
+        "summary": "Read OAuth and OIDC public signing keys",
+        "operationId": "getOAuthJwks",
+        "security": [
+
+        ],
+        "x-aether-token-profiles": [
+          "public"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "responses": {
+          "200": {
+            "description": "Public JSON Web Key Set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "keys"
+                  ],
+                  "properties": {
+                    "keys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "required": [
+                          "kty",
+                          "kid",
+                          "alg",
+                          "use"
+                        ],
+                        "properties": {
+                          "kty": {
+                            "type": "string",
+                            "enum": [
+                              "OKP",
+                              "RSA"
+                            ]
+                          },
+                          "kid": {
+                            "type": "string"
+                          },
+                          "alg": {
+                            "type": "string",
+                            "enum": [
+                              "EdDSA",
+                              "RS256"
+                            ]
+                          },
+                          "use": {
+                            "type": "string",
+                            "const": "sig"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request frequency or plan consumption was exceeded. Inspect `error.code`: `rate_limited` may be retried according to `Retry-After`; `quota_exceeded` must wait for quota reset or a plan adjustment.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Limit": {
+                "description": "Maximum requests permitted in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Remaining": {
+                "description": "Requests remaining in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Reset": {
+                "description": "UTC epoch seconds when the current rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Quota-Reset": {
+                "description": "RFC 3339 timestamp when a renewable plan quota resets, when applicable.",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "rate_limited"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "quota_exceeded"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Aether could not complete the request because of an internal failure.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required authentication or platform dependency is unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/scopes": {
+      "get": {
+        "tags": [
+          "Discovery"
+        ],
+        "summary": "List canonical OAuth scopes",
+        "operationId": "listOAuthScopes",
+        "security": [
+
+        ],
+        "x-aether-token-profiles": [
+          "public"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "responses": {
+          "200": {
+            "description": "Supported canonical scopes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "scopes"
+                  ],
+                  "properties": {
+                    "scopes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512,
+                        "description": "Canonical capability in one of three forms: *, platform:*, or platform:resource/path:action. Legacy dot scopes and two-part action shorthands are invalid.",
+                        "examples": [
+                          "storage:objects/*:read"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request frequency or plan consumption was exceeded. Inspect `error.code`: `rate_limited` may be retried according to `Retry-After`; `quota_exceeded` must wait for quota reset or a plan adjustment.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Limit": {
+                "description": "Maximum requests permitted in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Remaining": {
+                "description": "Requests remaining in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Reset": {
+                "description": "UTC epoch seconds when the current rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Quota-Reset": {
+                "description": "RFC 3339 timestamp when a renewable plan quota resets, when applicable.",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "rate_limited"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "quota_exceeded"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Aether could not complete the request because of an internal failure.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required authentication or platform dependency is unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/authorize": {
+      "get": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Start authorization code flow with PKCE",
+        "operationId": "authorize",
+        "security": [
+
+        ],
+        "x-aether-token-profiles": [
+          "browser_session"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "parameters": [
+          {
+            "name": "response_type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "code"
+            }
+          },
+          {
+            "name": "client_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nonce",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code_challenge",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 43,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "code_challenge_method",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "S256"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to hosted login",
+            "consent": null,
+            "or the validated client redirect URI.": null
+          },
+          "400": {
+            "description": "The request is malformed or violates a request constraint.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request frequency or plan consumption was exceeded. Inspect `error.code`: `rate_limited` may be retried according to `Retry-After`; `quota_exceeded` must wait for quota reset or a plan adjustment.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Limit": {
+                "description": "Maximum requests permitted in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Remaining": {
+                "description": "Requests remaining in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Reset": {
+                "description": "UTC epoch seconds when the current rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Quota-Reset": {
+                "description": "RFC 3339 timestamp when a renewable plan quota resets, when applicable.",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "rate_limited"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "quota_exceeded"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Aether could not complete the request because of an internal failure.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required authentication or platform dependency is unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/token": {
+      "post": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Exchange an authorization code, refresh token, or client credentials",
+        "operationId": "exchangeOAuthToken",
+        "security": [
+          {
+            "clientSecretBasic": [
+
+            ]
+          }
+        ],
+        "x-aether-token-profiles": [
+          "confidential_client"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "grant_type"
+                ],
+                "properties": {
+                  "grant_type": {
+                    "type": "string",
+                    "enum": [
+                      "authorization_code",
+                      "refresh_token",
+                      "client_credentials"
+                    ]
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "redirect_uri": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "code_verifier": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 128
+                  },
+                  "refresh_token": {
+                    "type": "string"
+                  },
+                  "audience": {
+                    "type": "string"
+                  },
+                  "scope": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OAuth token response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "access_token",
+                    "token_type",
+                    "expires_in"
+                  ],
+                  "properties": {
+                    "access_token": {
+                      "type": "string"
+                    },
+                    "token_type": {
+                      "type": "string",
+                      "const": "Bearer"
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "refresh_token": {
+                      "type": "string"
+                    },
+                    "id_token": {
+                      "type": "string"
+                    },
+                    "scope": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is malformed or violates a request constraint.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The bearer token is missing, invalid, expired, or revoked.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "WWW-Authenticate": {
+                "description": "Bearer authentication challenge.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request frequency or plan consumption was exceeded. Inspect `error.code`: `rate_limited` may be retried according to `Retry-After`; `quota_exceeded` must wait for quota reset or a plan adjustment.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Limit": {
+                "description": "Maximum requests permitted in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Remaining": {
+                "description": "Requests remaining in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Reset": {
+                "description": "UTC epoch seconds when the current rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Quota-Reset": {
+                "description": "RFC 3339 timestamp when a renewable plan quota resets, when applicable.",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "rate_limited"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "quota_exceeded"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Aether could not complete the request because of an internal failure.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required authentication or platform dependency is unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/revoke": {
+      "post": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Revoke an OAuth token",
+        "operationId": "revokeOAuthToken",
+        "security": [
+          {
+            "clientSecretBasic": [
+
+            ]
+          }
+        ],
+        "x-aether-token-profiles": [
+          "confidential_client"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "token"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "token_type_hint": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Revocation accepted."
+          },
+          "401": {
+            "description": "The bearer token is missing, invalid, expired, or revoked.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "WWW-Authenticate": {
+                "description": "Bearer authentication challenge.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request frequency or plan consumption was exceeded. Inspect `error.code`: `rate_limited` may be retried according to `Retry-After`; `quota_exceeded` must wait for quota reset or a plan adjustment.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Limit": {
+                "description": "Maximum requests permitted in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Remaining": {
+                "description": "Requests remaining in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Reset": {
+                "description": "UTC epoch seconds when the current rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Quota-Reset": {
+                "description": "RFC 3339 timestamp when a renewable plan quota resets, when applicable.",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "rate_limited"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "quota_exceeded"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Aether could not complete the request because of an internal failure.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required authentication or platform dependency is unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/introspect": {
+      "post": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Introspect an OAuth token owned by the client",
+        "operationId": "introspectOAuthToken",
+        "security": [
+          {
+            "clientSecretBasic": [
+
+            ]
+          }
+        ],
+        "x-aether-token-profiles": [
+          "confidential_client"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "token"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "token_type_hint": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RFC 7662-style introspection response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "active"
+                  ],
+                  "properties": {
+                    "active": {
+                      "type": "boolean"
+                    },
+                    "client_id": {
+                      "type": "string"
+                    },
+                    "token_type": {
+                      "type": "string"
+                    },
+                    "token_use": {
+                      "type": "string"
+                    },
+                    "scope": {
+                      "type": "string"
+                    },
+                    "aud": {
+                      "type": "string"
+                    },
+                    "iss": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "sub": {
+                      "type": "string"
+                    },
+                    "exp": {
+                      "type": "integer"
+                    },
+                    "iat": {
+                      "type": "integer"
+                    },
+                    "jti": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The bearer token is missing, invalid, expired, or revoked.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "WWW-Authenticate": {
+                "description": "Bearer authentication challenge.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request frequency or plan consumption was exceeded. Inspect `error.code`: `rate_limited` may be retried according to `Retry-After`; `quota_exceeded` must wait for quota reset or a plan adjustment.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Limit": {
+                "description": "Maximum requests permitted in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Remaining": {
+                "description": "Requests remaining in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Reset": {
+                "description": "UTC epoch seconds when the current rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Quota-Reset": {
+                "description": "RFC 3339 timestamp when a renewable plan quota resets, when applicable.",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "rate_limited"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "quota_exceeded"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Aether could not complete the request because of an internal failure.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required authentication or platform dependency is unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/userinfo": {
+      "get": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Read claims for an OAuth user access token",
+        "operationId": "getUserInfo",
+        "security": [
+          {
+            "bearerAuth": [
+
+            ]
+          }
+        ],
+        "x-aether-token-profiles": [
+          "user_access_v1"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized pairwise user claims.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": [
+                    "sub"
+                  ],
+                  "properties": {
+                    "sub": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The bearer token is missing, invalid, expired, or revoked.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "WWW-Authenticate": {
+                "description": "Bearer authentication challenge.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication succeeded but the token profile, context, or capability is insufficient.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request frequency or plan consumption was exceeded. Inspect `error.code`: `rate_limited` may be retried according to `Retry-After`; `quota_exceeded` must wait for quota reset or a plan adjustment.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Limit": {
+                "description": "Maximum requests permitted in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Remaining": {
+                "description": "Requests remaining in the current rate-limit window.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "RateLimit-Reset": {
+                "description": "UTC epoch seconds when the current rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "Quota-Reset": {
+                "description": "RFC 3339 timestamp when a renewable plan quota resets, when applicable.",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "rate_limited"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "error"
+                          ],
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "message"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bad_request",
+                                    "unauthorized",
+                                    "token_revoked",
+                                    "forbidden",
+                                    "INSUFFICIENT_CAPABILITY",
+                                    "not_found",
+                                    "conflict",
+                                    "validation_failed",
+                                    "rate_limited",
+                                    "quota_exceeded",
+                                    "internal_error",
+                                    "auth_service_unavailable"
+                                  ]
+                                },
+                                "message": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "request_id": {
+                                  "allOf": [
+                                    {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Za-z0-9._-]+$"
+                                    }
+                                  ],
+                                  "examples": [
+                                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "error": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "const": "quota_exceeded"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Aether could not complete the request because of an internal failure.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required authentication or platform dependency is unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request identifier used for support and diagnostics.",
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  ],
+                  "examples": [
+                    "req_0196f13dd5337a489ab0c10c6f9fa473"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until a frequency-limited request may be retried.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "bad_request",
+                            "unauthorized",
+                            "token_revoked",
+                            "forbidden",
+                            "INSUFFICIENT_CAPABILITY",
+                            "not_found",
+                            "conflict",
+                            "validation_failed",
+                            "rate_limited",
+                            "quota_exceeded",
+                            "internal_error",
+                            "auth_service_unavailable"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "request_id": {
+                          "allOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Za-z0-9._-]+$"
+                            }
+                          ],
+                          "examples": [
+                            "req_0196f13dd5337a489ab0c10c6f9fa473"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "A short-lived Aether access token. Public APIs accept only the token profiles explicitly declared by each operation; browser cookies and private Aether service credentials never substitute for this token."
+      },
+      "clientSecretBasic": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "Registered confidential OAuth client credentials."
+      }
+    },
+    "schemas": {
+      "TokenRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "grant_type"
+        ],
+        "properties": {
+          "grant_type": {
+            "type": "string",
+            "enum": [
+              "authorization_code",
+              "refresh_token",
+              "client_credentials"
+            ]
+          },
+          "code": {
+            "type": "string"
+          },
+          "redirect_uri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "code_verifier": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 128
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "audience": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in"
+        ],
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "token_type": {
+            "type": "string",
+            "const": "Bearer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "id_token": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          }
+        }
+      },
+      "TokenHandleRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "token"
+        ],
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "token_type_hint": {
+            "type": "string"
+          }
+        }
+      },
+      "IntrospectionResponse": {
+        "type": "object",
+        "required": [
+          "active"
+        ],
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "client_id": {
+            "type": "string"
+          },
+          "token_type": {
+            "type": "string"
+          },
+          "token_use": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "aud": {
+            "type": "string"
+          },
+          "iss": {
+            "type": "string",
+            "format": "uri"
+          },
+          "sub": {
+            "type": "string"
+          },
+          "exp": {
+            "type": "integer"
+          },
+          "iat": {
+            "type": "integer"
+          },
+          "jti": {
+            "type": "string"
+          }
+        }
+      },
+      "UserInfo": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "sub"
+        ],
+        "properties": {
+          "sub": {
+            "type": "string"
+          }
+        }
+      },
+      "OpenIdConfiguration": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "issuer",
+          "authorization_endpoint",
+          "token_endpoint",
+          "jwks_uri",
+          "response_types_supported",
+          "grant_types_supported",
+          "code_challenge_methods_supported"
+        ],
+        "properties": {
+          "issuer": {
+            "type": "string",
+            "format": "uri"
+          },
+          "authorization_endpoint": {
+            "type": "string",
+            "format": "uri"
+          },
+          "token_endpoint": {
+            "type": "string",
+            "format": "uri"
+          },
+          "userinfo_endpoint": {
+            "type": "string",
+            "format": "uri"
+          },
+          "revocation_endpoint": {
+            "type": "string",
+            "format": "uri"
+          },
+          "introspection_endpoint": {
+            "type": "string",
+            "format": "uri"
+          },
+          "jwks_uri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "response_types_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "grant_types_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "code_challenge_methods_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id_token_signing_alg_values_supported": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "EdDSA",
+                "RS256"
+              ]
+            }
+          }
+        }
+      },
+      "Jwks": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "keys"
+        ],
+        "properties": {
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "required": [
+                "kty",
+                "kid",
+                "alg",
+                "use"
+              ],
+              "properties": {
+                "kty": {
+                  "type": "string",
+                  "enum": [
+                    "OKP",
+                    "RSA"
+                  ]
+                },
+                "kid": {
+                  "type": "string"
+                },
+                "alg": {
+                  "type": "string",
+                  "enum": [
+                    "EdDSA",
+                    "RS256"
+                  ]
+                },
+                "use": {
+                  "type": "string",
+                  "const": "sig"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

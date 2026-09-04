@@ -1,0 +1,30 @@
+{
+  "name": "@aetherplatform/core",
+  "version": "0.1.0-beta.1",
+  "description": "Authentication, transport, pagination, retries, and typed errors for the Aether SDK.",
+  "license": "Apache-2.0",
+  "author": "Aether",
+  "type": "module",
+  "files": ["dist", "README.md", "LICENSE", "NOTICE", "CHANGELOG.md"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aetherplatform/aether-typescript.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/aetherplatform/aether-typescript/tree/main/packages/core#readme",
+  "bugs": {"url": "https://github.com/aetherplatform/aether-typescript/issues"},
+  "publishConfig": {"access": "public", "provenance": true, "tag": "next"},
+  "engines": {"node": ">=20"},
+  "sideEffects": false
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@4.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    [
+      "@aetherplatform/core",
+      "@aetherplatform/storage"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "@aetherplatform/identity",
+    "@aetherplatform/events",
+    "@aetherplatform/notifications",
+    "@aetherplatform/webhooks"
+  ],
+  "bumpVersionsWithWorkspaceProtocolOnly": false
+}

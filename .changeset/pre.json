@@ -1,0 +1,13 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@aetherplatform/core": "0.1.0-beta.1",
+    "@aetherplatform/identity": "0.1.0-beta.1",
+    "@aetherplatform/events": "0.1.0-beta.1",
+    "@aetherplatform/notifications": "0.1.0-beta.1",
+    "@aetherplatform/storage": "0.1.0-beta.1",
+    "@aetherplatform/webhooks": "0.1.0-beta.1"
+  },
+  "changesets": []
+}
