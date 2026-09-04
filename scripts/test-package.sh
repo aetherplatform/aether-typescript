@@ -22,7 +22,7 @@ done
 for package in core storage; do
   tarball="$(find "${work_dir}" -maxdepth 1 -name "aetherplatform-${package}-*.tgz" -print -quit)"
   for required_file in package/LICENSE package/NOTICE package/README.md package/CHANGELOG.md package/package.json; do
-    if ! tar -tzf "${tarball}" | grep -Fxq "${required_file}"; then
+    if ! tar -tzf "${tarball}" "${required_file}" >/dev/null 2>&1; then
       echo "${package} tarball is missing ${required_file}" >&2
       exit 1
     fi

@@ -3,7 +3,8 @@
 This workspace contains the TypeScript SDK for the Aether managed platform.
 The GitHub and npm organizations, public package boundary, publisher name, and
 release policy are locked. Publication remains blocked until the hosted sandbox
-release gate passes and npm trusted publishing is connected. The approved
+release gate passes, npm trusted publishing is connected, and the repository
+variable `AETHER_SDK_RELEASE_ENABLED` is explicitly set to `true`. The approved
 public scope is `@aetherplatform`; the first public beta contains Core and
 Storage at `0.1.0-beta.1` under the `next` dist-tag.
 

@@ -165,6 +165,12 @@ Every public npm release requires:
 9. The release is published under the correct dist-tag and verified from a
    clean external consumer after publication.
 
+The release workflow remains skipped until the repository variable
+`AETHER_SDK_RELEASE_ENABLED` is explicitly set to `true`. This switch is set
+only after the hosted sandbox variables/secrets and npm trusted publisher are
+configured, preventing an incomplete repository bootstrap from appearing as a
+failed or partially attempted release.
+
 ## Deprecation And Emergency Changes
 
 - Preview releases may change incompatibly, but the changelog must identify the

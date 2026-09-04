@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   release:
+    if: vars.AETHER_SDK_RELEASE_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: sdk-sandbox
     steps:
