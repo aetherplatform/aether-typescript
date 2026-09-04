@@ -3,10 +3,13 @@
 This workspace contains the TypeScript SDK for the Aether managed platform.
 The GitHub and npm organizations, public package boundary, publisher name, and
 release policy are locked. Publication remains blocked until the hosted sandbox
-release gate passes, npm trusted publishing is connected, and the repository
-variable `AETHER_SDK_RELEASE_ENABLED` is explicitly set to `true`. The approved
-public scope is `@aetherplatform`; the first public beta contains Core and
-Storage at `0.1.0-beta.1` under the `next` dist-tag.
+release gate passes. Because npm trusted publishers can only be configured from
+an existing package's settings, the first package creation uses the dedicated,
+reviewer-gated bootstrap workflow with a short-lived granular npm token. The
+token is deleted immediately after Core and Storage exist; all subsequent
+releases use npm trusted publishing. The approved public scope is
+`@aetherplatform`; the first public beta contains Core and Storage at
+`0.1.0-beta.1` under the `next` dist-tag.
 
 The SDK contains only public wire contracts and customer-safe behavior. It does
 not contain service-JWT signing, Aether runtime modules, NATS subjects,
@@ -44,6 +47,14 @@ against a configured hosted sandbox. It requires
 `AETHER_SDK_SANDBOX_CLIENT_ID`, `AETHER_SDK_SANDBOX_CLIENT_SECRET`, and
 `AETHER_SDK_SANDBOX_NAMESPACE_ID`. The client must have object create, read,
 share, and delete capabilities in that sandbox namespace.
+
+The one-time `.github/workflows/bootstrap-release.yml` workflow remains disabled
+unless `AETHER_SDK_BOOTSTRAP_RELEASE_ENABLED=true` and the protected
+`sdk-sandbox` environment contains `NPM_BOOTSTRAP_TOKEN`. After the first
+publish, configure `release.yml` as the trusted publisher for both packages,
+delete the bootstrap token, disable the bootstrap gate, and enable
+`AETHER_SDK_RELEASE_ENABLED=true`. The permanent release workflow rejects npm
+tokens and uses only GitHub OIDC.
 
 Core and Storage are the only publishable packages in the first beta. Identity,
 Events, Notifications, and Webhooks remain private previews until they pass the

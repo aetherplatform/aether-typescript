@@ -6,6 +6,7 @@ import path from "node:path";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dryRun = process.argv.includes("--dry-run");
 const packageDirectories = ["core", "storage"];
+const authMode = process.env.AETHER_NPM_AUTH_MODE;
 
 function runNpm(args, {allowNotFound = false} = {}) {
   const result = spawnSync("npm", args, {cwd: root, encoding: "utf8"});
@@ -48,8 +49,36 @@ for (const release of releases) {
   console.log(`${dryRun ? "Would publish" : "Publishing"} ${release.name}@${release.version} under ${release.tag}`);
 
   if (dryRun) continue;
-  if (process.env.GITHUB_ACTIONS !== "true" && process.env.AETHER_ALLOW_LOCAL_PUBLISH !== "1") {
-    throw new Error("Publishing is restricted to GitHub Actions trusted publishing");
+  if (process.env.GITHUB_ACTIONS !== "true") {
+    throw new Error("Publishing is restricted to the protected GitHub Actions release workflows");
+  }
+  if (!new Set(["trusted-publishing", "bootstrap-token"]).has(authMode)) {
+    throw new Error("AETHER_NPM_AUTH_MODE must identify an approved release workflow");
+  }
+  if (authMode === "trusted-publishing" && process.env.NODE_AUTH_TOKEN) {
+    throw new Error("Trusted publishing must not receive a long-lived npm token");
+  }
+  if (
+    authMode === "bootstrap-token" &&
+    (process.env.AETHER_SDK_BOOTSTRAP_RELEASE_ENABLED !== "true" ||
+      process.env.AETHER_SDK_RELEASE_ENABLED === "true" ||
+      !process.env.NODE_AUTH_TOKEN)
+  ) {
+    throw new Error("The one-time bootstrap release requires its explicit gate and npm token");
+  }
+
+  if (authMode === "bootstrap-token") {
+    const publishedVersions = runNpm(["view", release.name, "versions", "--json"], {allowNotFound: true});
+
+    if (publishedVersions !== null) {
+      const versions = [JSON.parse(publishedVersions)].flat();
+      if (versions.includes(release.version)) {
+        console.log(`${release.name}@${release.version} is already immutable on npm; skipping`);
+        continue;
+      }
+
+      throw new Error(`Bootstrap publishing cannot add a version to existing package ${release.name}`);
+    }
   }
 
   const existing = runNpm(["view", `${release.name}@${release.version}`, "version", "--json"], {

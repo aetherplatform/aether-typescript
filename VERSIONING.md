@@ -171,6 +171,30 @@ only after the hosted sandbox variables/secrets and npm trusted publisher are
 configured, preventing an incomplete repository bootstrap from appearing as a
 failed or partially attempted release.
 
+### One-Time npm Package Bootstrap
+
+npm exposes trusted-publisher settings only after a package exists. The initial
+creation of `@aetherplatform/core` and `@aetherplatform/storage` therefore uses
+the manual `bootstrap-release.yml` workflow in the protected `sdk-sandbox`
+environment. It requires all hosted-sandbox gates, GitHub provenance, the
+explicit `AETHER_SDK_BOOTSTRAP_RELEASE_ENABLED=true` repository variable, and a
+short-lived granular `NPM_BOOTSTRAP_TOKEN` environment secret.
+
+After both packages exist:
+
+1. Configure GitHub Actions trusted publishing on each npm package for the
+   `aetherplatform/aether-typescript` repository, `release.yml` workflow, and
+   `sdk-sandbox` environment, allowing direct `npm publish`.
+2. Delete `NPM_BOOTSTRAP_TOKEN` and set
+   `AETHER_SDK_BOOTSTRAP_RELEASE_ENABLED=false`.
+3. Set `AETHER_SDK_RELEASE_ENABLED=true` only after a hosted-sandbox rerun
+   succeeds.
+4. Verify subsequent publication succeeds through OIDC without
+   `NODE_AUTH_TOKEN`.
+
+The bootstrap token is never accepted by the permanent release workflow and is
+not retained as a rollback credential.
+
 ## Deprecation And Emergency Changes
 
 - Preview releases may change incompatibly, but the changelog must identify the
@@ -187,8 +211,8 @@ failed or partially attempted release.
 
 The package strategy is locked, but publication still requires:
 
-- creation and ownership confirmation for the `aetherplatform` GitHub and npm
-  organizations and trusted-publishing configuration;
+- ownership confirmation for the `aetherplatform` npm organization, one-time
+  package bootstrap, and trusted-publishing configuration;
 - creation of the `security@useather.co` and `support@useather.co` forwarding
   addresses;
 - one configured hosted sandbox client, namespace, and deployment.

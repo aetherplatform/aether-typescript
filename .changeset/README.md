@@ -21,3 +21,9 @@ edge case that can otherwise place a new prerelease on `latest`.
 
 Run `npm run release:plan` to inspect the exact package versions and npm tags
 without contacting npm or publishing anything.
+
+The first creation of Core and Storage is the only exception: npm requires a
+package to exist before its trusted publisher can be configured. The protected,
+manual `bootstrap-release.yml` workflow uses a short-lived granular token and
+still emits GitHub provenance. Delete that token and disable the bootstrap gate
+immediately after configuring `release.yml` as each package's trusted publisher.

@@ -1,28 +1,23 @@
-name: Release SDK
+name: Bootstrap SDK Packages
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
-  pull-requests: write
 
 concurrency:
-  group: sdk-release
+  group: sdk-bootstrap-release
   cancel-in-progress: false
 
 jobs:
-  release:
-    if: vars.AETHER_SDK_RELEASE_ENABLED == 'true'
+  bootstrap:
+    if: vars.AETHER_SDK_BOOTSTRAP_RELEASE_ENABLED == 'true' && vars.AETHER_SDK_RELEASE_ENABLED != 'true'
     runs-on: ubuntu-latest
     environment: sdk-sandbox
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -33,16 +28,12 @@ jobs:
       - run: npm run release:plan
       - run: npm test
       - run: npm run test:package
-      - name: Create release pull request or publish
-        uses: changesets/action@v1
-        with:
-          publish: npm run release
-          version: npm run version-packages
-          commit: "chore(release): version packages"
-          title: "chore(release): version packages"
+      - name: Publish initial packages
+        run: npm run release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AETHER_NPM_AUTH_MODE: trusted-publishing
+          AETHER_NPM_AUTH_MODE: bootstrap-token
+          AETHER_SDK_BOOTSTRAP_RELEASE_ENABLED: ${{ vars.AETHER_SDK_BOOTSTRAP_RELEASE_ENABLED }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
           AETHER_SDK_SANDBOX_TOKEN_URL: ${{ vars.AETHER_SDK_SANDBOX_TOKEN_URL }}
           AETHER_SDK_SANDBOX_STORAGE_URL: ${{ vars.AETHER_SDK_SANDBOX_STORAGE_URL }}
           AETHER_SDK_SANDBOX_NAMESPACE_ID: ${{ vars.AETHER_SDK_SANDBOX_NAMESPACE_ID }}
