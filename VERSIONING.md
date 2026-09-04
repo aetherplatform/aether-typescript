@@ -13,9 +13,9 @@ registered without renaming the npm scope or republishing old package versions.
 
 Public contacts:
 
-- Security: `security@useaether.me`
-- SDK support: `support@useaether.me`
-- Hosted sandbox: `sandbox.api.useaether.me`
+- Security: `security@useather.co`
+- SDK support: `support@useather.co`
+- Hosted sandbox: `sandbox.api.useather.co`
 
 ## Public Package Boundary
 
@@ -189,6 +189,6 @@ The package strategy is locked, but publication still requires:
 
 - creation and ownership confirmation for the `aetherplatform` GitHub and npm
   organizations and trusted-publishing configuration;
-- creation of the `security@useaether.me` and `support@useaether.me` forwarding
+- creation of the `security@useather.co` and `support@useather.co` forwarding
   addresses;
 - one configured hosted sandbox client, namespace, and deployment.
