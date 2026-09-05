@@ -68,6 +68,10 @@ test("client credentials reject invalid configuration and malformed success resp
     () => new ClientCredentialsTokenProvider({...baseConfig, clockSkewSeconds: -1}),
     /clockSkewSeconds must be a non-negative finite number/,
   );
+  assert.throws(
+    () => new ClientCredentialsTokenProvider({...baseConfig, maxRetries: -1}),
+    /maxRetries must be a non-negative safe integer/,
+  );
 
   for (const payload of [
     {access_token: "", token_type: "Bearer", expires_in: 600},
@@ -83,6 +87,57 @@ test("client credentials reject invalid configuration and malformed success resp
       assert.equal(error.code, "invalid_token_response");
       return true;
     });
+  }
+});
+
+test("client credentials retry transient failures only within the configured bound", async () => {
+  let calls = 0;
+  const retries = [];
+  const provider = new ClientCredentialsTokenProvider({
+    tokenUrl: "https://identity.example/oauth/token",
+    clientId: "client_1",
+    clientSecret: "secret_1",
+    audience: "aether-storage",
+    scope: ["storage:*"],
+    onRetry: (event) => retries.push(event),
+    fetch: async () => {
+      calls += 1;
+      if (calls === 1) {
+        return Response.json(
+          {error: {code: "temporarily_unavailable", message: "try again"}},
+          {status: 503, headers: {"retry-after": "0", "x-request-id": "req_token_retry"}},
+        );
+      }
+      return Response.json({access_token: "access_1", token_type: "Bearer", expires_in: 600, scope: "storage:*"});
+    },
+  });
+
+  const token = await provider.getToken();
+  assert.equal(token.accessToken, "access_1");
+  assert.equal(Number.isFinite(token.expiresAt), true);
+  assert.equal("scope" in token, false);
+  assert.equal(calls, 2);
+  assert.deepEqual(retries.map(({attempt, maximumAttempts, requestId}) => [attempt, maximumAttempts, requestId]), [
+    [1, 2, "req_token_retry"],
+  ]);
+});
+
+test("client credentials never retry invalid clients or quota exhaustion", async () => {
+  for (const [status, code] of [[401, "invalid_client"], [429, "quota_exceeded"]]) {
+    let calls = 0;
+    const provider = new ClientCredentialsTokenProvider({
+      tokenUrl: "https://identity.example/oauth/token",
+      clientId: "client_1",
+      clientSecret: "secret_1",
+      audience: "aether-storage",
+      scope: ["storage:*"],
+      fetch: async () => {
+        calls += 1;
+        return Response.json({error: {code, message: code}}, {status});
+      },
+    });
+    await assert.rejects(provider.getToken(), (error) => error instanceof AetherError && error.code === code);
+    assert.equal(calls, 1);
   }
 });
 

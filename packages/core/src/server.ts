@@ -2,6 +2,7 @@ import {
   AetherError,
   type AccessToken,
   type Fetch,
+  type RetryEvent,
   type RetryMetadata,
   type TokenProvider,
 } from "./index.js";
@@ -14,24 +15,38 @@ export interface ClientCredentialsConfig {
   scope: readonly string[];
   fetch?: Fetch;
   timeoutMs?: number;
+  maxRetries?: number;
   clockSkewSeconds?: number;
+  onRetry?: (event: RetryEvent) => void;
 }
 
 export class ClientCredentialsTokenProvider implements TokenProvider {
-  readonly #config: Required<Pick<ClientCredentialsConfig, "timeoutMs" | "clockSkewSeconds">> & ClientCredentialsConfig;
+  readonly #config: Required<Pick<ClientCredentialsConfig, "timeoutMs" | "maxRetries" | "clockSkewSeconds">> & ClientCredentialsConfig;
   readonly #fetch: Fetch;
   #cached: AccessToken | undefined;
   #pending: Promise<AccessToken> | undefined;
 
   constructor(config: ClientCredentialsConfig) {
-    this.#config = {timeoutMs: 10_000, clockSkewSeconds: 30, ...config};
+    this.#config = {timeoutMs: 10_000, maxRetries: 1, clockSkewSeconds: 30, ...config};
     this.#fetch = config.fetch ?? globalThis.fetch;
     if (!this.#fetch) throw new TypeError("A fetch implementation is required");
     if (!Number.isSafeInteger(this.#config.timeoutMs) || this.#config.timeoutMs <= 0) {
       throw new TypeError("timeoutMs must be a positive safe integer");
     }
+    if (!Number.isSafeInteger(this.#config.maxRetries) || this.#config.maxRetries < 0) {
+      throw new TypeError("maxRetries must be a non-negative safe integer");
+    }
     if (!Number.isFinite(this.#config.clockSkewSeconds) || this.#config.clockSkewSeconds < 0) {
       throw new TypeError("clockSkewSeconds must be a non-negative finite number");
+    }
+    if (!config.tokenUrl.trim() || !config.clientId.trim() || !config.clientSecret || !config.audience.trim()) {
+      throw new TypeError("tokenUrl, clientId, clientSecret, and audience are required");
+    }
+    try {
+      const tokenUrl = new URL(config.tokenUrl);
+      if (!new Set(["http:", "https:"]).has(tokenUrl.protocol)) throw new Error("invalid protocol");
+    } catch {
+      throw new TypeError("tokenUrl must be an absolute HTTP URL");
     }
   }
 
@@ -52,6 +67,27 @@ export class ClientCredentialsTokenProvider implements TokenProvider {
   }
 
   async #issue(): Promise<AccessToken> {
+    for (let attempt = 1; ; attempt += 1) {
+      try {
+        return await this.#issueOnce();
+      } catch (error) {
+        if (!(error instanceof AetherError) || attempt > this.#config.maxRetries || !retryable(error)) throw error;
+        const delayMs = retryDelayMilliseconds(error, attempt);
+        this.#config.onRetry?.({
+          operation: "clientCredentialsToken",
+          attempt,
+          maximumAttempts: this.#config.maxRetries + 1,
+          delayMs,
+          status: error.status,
+          code: error.code,
+          ...(error.requestId ? {requestId: error.requestId} : {}),
+        });
+        await delay(delayMs);
+      }
+    }
+  }
+
+  async #issueOnce(): Promise<AccessToken> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.#config.timeoutMs);
     const credentials = Buffer.from(`${this.#config.clientId}:${this.#config.clientSecret}`).toString("base64");
@@ -95,18 +131,37 @@ export class ClientCredentialsTokenProvider implements TokenProvider {
       const token: AccessToken = {
         accessToken: payload.access_token,
         expiresAt: Date.now() + payload.expires_in * 1000,
-        ...(typeof payload.scope === "string" ? {scope: payload.scope} : {}),
       };
       this.#cached = token;
       return token;
     } catch (error) {
       if (error instanceof AetherError) throw error;
-      const message = error instanceof Error && error.name === "AbortError" ? "Token request timed out" : "Token request failed";
-      throw new AetherError({status: 0, code: "token_request_failed", message});
+      const timedOut = error instanceof Error && error.name === "AbortError";
+      throw new AetherError({
+        status: 0,
+        code: timedOut ? "request_timeout" : "network_error",
+        message: timedOut ? "Token request timed out" : "Token request failed",
+      });
     } finally {
       clearTimeout(timeout);
     }
   }
+}
+
+function retryable(error: AetherError): boolean {
+  if (error.status === 0) return new Set(["network_error", "request_timeout"]).has(error.code);
+  if (new Set([502, 503, 504]).has(error.status)) return true;
+  return error.status === 429 && error.code === "rate_limited";
+}
+
+function retryDelayMilliseconds(error: AetherError, attempt: number): number {
+  if (error.retry.retryAfterSeconds !== undefined) return Math.max(0, error.retry.retryAfterSeconds * 1_000);
+  return Math.min(100 * 2 ** (attempt - 1), 1_000);
+}
+
+async function delay(milliseconds: number): Promise<void> {
+  if (milliseconds <= 0) return;
+  await new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 async function readJson(response: Response): Promise<any> {

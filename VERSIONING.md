@@ -22,13 +22,18 @@ Public contacts:
 The public TypeScript SDK uses the `@aetherplatform` npm scope and lives in the
 public `aetherplatform/aether-typescript` repository.
 
-The first public release contains only:
+The first public release contains:
 
 - `@aetherplatform/core`
+- `@aetherplatform/identity`
+- `@aetherplatform/events`
+- `@aetherplatform/notifications`
 - `@aetherplatform/storage`
+- `@aetherplatform/webhooks`
 
-Identity, Events, Notifications, and Webhooks remain unpublished until their
-customer contracts and examples pass the same release gates.
+All six packages remain unpublished until their customer contracts and hosted
+sandbox checks pass together. A package being marked publishable in source is
+not evidence that its backing hosted API is currently available.
 
 The SDK and approved public specifications use Apache License 2.0. Aether
 backend services, deployment code, migrations, signing material, internal NATS
@@ -108,9 +113,9 @@ as new immutable versions; tags may move, package contents may not.
 
 ## Package Coordination
 
-Core and Storage use synchronized versions during the initial beta. Storage
-depends on the exact matching Core prerelease version so a beta installation
-cannot resolve an untested Core combination.
+All six packages use synchronized versions during the initial beta. Every
+platform package depends on the exact matching Core prerelease version so a
+beta installation cannot resolve an untested Core combination.
 
 After `1.0.0`, packages may adopt independent versions only when separate
 release cadence creates clear customer value. Stable internal dependencies use
@@ -134,7 +139,8 @@ are outputs of that process, not where the changelog is authored.
 
 1. A customer-visible pull request adds a small file with `npm run changeset`.
 2. After feature changes reach `main`, GitHub opens or updates a release pull
-   request containing synchronized Core and Storage versions and changelogs.
+   request containing synchronized versions and changelogs for all six
+   packages.
 3. A maintainer reviews and merges that release pull request.
 4. CI reruns Node 20/22, source-free package, local sandbox, and hosted sandbox
    gates.
@@ -155,8 +161,9 @@ Every public npm release requires:
 2. Node.js 20 and 22 unit, package, and local sandbox suites pass.
 3. The source-free consumer installs the exact package tarballs.
 4. Browser-safe roots contain no Node.js or client-secret implementation.
-5. The hosted sandbox upload, scan, download, and cleanup proof passes against
-   the candidate commit.
+5. The hosted sandbox proves Identity discovery and JWKS, Events catalog reads,
+   Notifications template reads, Webhooks subscription reads, and the Storage
+   upload, scan, download, and cleanup lifecycle against the candidate commit.
 6. Package contents contain no private paths, credentials, service-auth keys,
    migrations, internal subjects, or deployment files.
 7. The changelog and migration guidance match the release.
@@ -171,16 +178,38 @@ only after the hosted sandbox variables/secrets and npm trusted publisher are
 configured, preventing an incomplete repository bootstrap from appearing as a
 failed or partially attempted release.
 
+The protected `sdk-sandbox` environment supplies:
+
+```text
+AETHER_SDK_SANDBOX_TOKEN_URL
+AETHER_SDK_SANDBOX_IDENTITY_URL
+AETHER_SDK_SANDBOX_EVENTS_URL
+AETHER_SDK_SANDBOX_EVENTS_AUDIENCE
+AETHER_SDK_SANDBOX_NOTIFICATIONS_URL
+AETHER_SDK_SANDBOX_NOTIFICATIONS_AUDIENCE
+AETHER_SDK_SANDBOX_STORAGE_URL
+AETHER_SDK_SANDBOX_STORAGE_AUDIENCE
+AETHER_SDK_SANDBOX_WEBHOOKS_URL
+AETHER_SDK_SANDBOX_WEBHOOKS_AUDIENCE
+AETHER_SDK_SANDBOX_NAMESPACE_ID
+AETHER_SDK_SANDBOX_CLIENT_ID
+AETHER_SDK_SANDBOX_CLIENT_SECRET
+```
+
+URLs and audiences are non-secret environment variables. The client ID and
+client secret are environment secrets. The sandbox client receives only the
+capabilities exercised by the proof.
+
 ### One-Time npm Package Bootstrap
 
 npm exposes trusted-publisher settings only after a package exists. The initial
-creation of `@aetherplatform/core` and `@aetherplatform/storage` therefore uses
+creation of all six `@aetherplatform` packages therefore uses
 the manual `bootstrap-release.yml` workflow in the protected `sdk-sandbox`
 environment. It requires all hosted-sandbox gates, GitHub provenance, the
 explicit `AETHER_SDK_BOOTSTRAP_RELEASE_ENABLED=true` repository variable, and a
 short-lived granular `NPM_BOOTSTRAP_TOKEN` environment secret.
 
-After both packages exist:
+After all six packages exist:
 
 1. Configure GitHub Actions trusted publishing on each npm package for the
    `aetherplatform/aether-typescript` repository, `release.yml` workflow, and
@@ -215,4 +244,6 @@ The package strategy is locked, but publication still requires:
   package bootstrap, and trusted-publishing configuration;
 - creation of the `security@useather.co` and `support@useather.co` forwarding
   addresses;
-- one configured hosted sandbox client, namespace, and deployment.
+- one configured hosted sandbox client and namespace;
+- configured Identity, Events, Notifications, Storage, and Webhooks sandbox
+  endpoints and platform audiences.

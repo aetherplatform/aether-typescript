@@ -5,7 +5,7 @@ import path from "node:path";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dryRun = process.argv.includes("--dry-run");
-const packageDirectories = ["core", "storage"];
+const packageDirectories = ["core", "identity", "events", "notifications", "storage", "webhooks"];
 const authMode = process.env.AETHER_NPM_AUTH_MODE;
 
 function runNpm(args, {allowNotFound = false} = {}) {
@@ -41,8 +41,8 @@ for (const directory of packageDirectories) {
   releases.push({directory, name: manifest.name, version: manifest.version, tag});
 }
 
-if (releases[0].version !== releases[1].version) {
-  throw new Error("Core and Storage versions must remain synchronized during beta");
+if (new Set(releases.map(({version}) => version)).size !== 1) {
+  throw new Error("All Aether TypeScript SDK versions must remain synchronized during beta");
 }
 
 for (const release of releases) {

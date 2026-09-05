@@ -4,22 +4,30 @@ import test from "node:test";
 
 import * as core from "../packages/core/dist/index.js";
 import * as coreServer from "../packages/core/dist/server.js";
+import * as identity from "../packages/identity/dist/index.js";
+import * as identityServer from "../packages/identity/dist/server.js";
 import * as webhooks from "../packages/webhooks/dist/index.js";
 import * as webhooksServer from "../packages/webhooks/dist/server.js";
 
 test("browser-safe roots exclude server credential and cryptographic helpers", async () => {
   assert.equal("ClientCredentialsTokenProvider" in core, false);
+  assert.equal("ConfidentialIdentityClient" in identity, false);
+  assert.equal("ClientCredentialsTokenProvider" in identity, false);
   assert.equal("verifyWebhookSignature" in webhooks, false);
   assert.equal(typeof coreServer.ClientCredentialsTokenProvider, "function");
+  assert.equal(typeof identityServer.ConfidentialIdentityClient, "function");
   assert.equal(typeof webhooksServer.verifyWebhookSignature, "function");
 
   for (const path of [
     new URL("../packages/core/dist/index.js", import.meta.url),
+    new URL("../packages/identity/dist/index.js", import.meta.url),
+    new URL("../packages/identity/dist/internal.js", import.meta.url),
     new URL("../packages/webhooks/dist/index.js", import.meta.url),
   ]) {
     const source = await readFile(path, "utf8");
     assert.doesNotMatch(source, /node:/);
     assert.doesNotMatch(source, /\bBuffer\b/);
+    assert.doesNotMatch(source, /clientSecret/);
   }
 });
 

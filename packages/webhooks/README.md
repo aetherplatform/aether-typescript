@@ -1,12 +1,24 @@
-# Aether Webhooks SDK Preview
+# `@aetherplatform/webhooks`
 
-Typed customer management operations. Provider ingress and internal replay or
-repair infrastructure are not exposed.
+Typed customer operations for webhook subscriptions, deliveries, replay, and
+inbound endpoints.
 
-Import `verifyWebhookSignature` from `@aetherplatform/webhooks/server`. It
-verifies outbound Aether deliveries against the exact raw request body and
-`X-Aether-Signature` header. It enforces the five-minute timestamp tolerance by
-default, accepts either signature during secret rotation, and uses a
-constant-time digest comparison. Verify before parsing or changing the request
-body. The root package export remains browser-safe and contains management
-operations only.
+```ts
+import {WebhooksClient} from "@aetherplatform/webhooks";
+
+const webhooks = new WebhooksClient({baseUrl, tokenProvider});
+const subscriptions = await webhooks.request("listWebhookSubscriptions");
+```
+
+Delivery signature verification is server-only:
+
+```ts
+import {verifyWebhookSignature} from "@aetherplatform/webhooks/server";
+
+const verified = verifyWebhookSignature(rawBody, signatureHeader, secret);
+```
+
+Verification uses the exact raw body, enforces a five-minute timestamp
+tolerance by default, accepts either valid signature during secret rotation,
+and compares HMAC-SHA256 digests in constant time. Provider ingress and
+internal repair infrastructure are excluded from the public package.

@@ -5,18 +5,17 @@
   "fixed": [
     [
       "@aetherplatform/core",
-      "@aetherplatform/storage"
+      "@aetherplatform/identity",
+      "@aetherplatform/events",
+      "@aetherplatform/notifications",
+      "@aetherplatform/storage",
+      "@aetherplatform/webhooks"
     ]
   ],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "@aetherplatform/identity",
-    "@aetherplatform/events",
-    "@aetherplatform/notifications",
-    "@aetherplatform/webhooks"
-  ],
+  "ignore": [],
   "bumpVersionsWithWorkspaceProtocolOnly": false
 }

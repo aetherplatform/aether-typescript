@@ -7,5 +7,6 @@
 - Initial public beta of Aether Core.
 - Browser-safe HTTP operations, typed errors, bounded retry behavior, request
   identifiers, and cursor pagination.
-- Server-only client-credentials token provider with single-flight caching and
-  secret redaction.
+- Server-only client-credentials token provider with single-flight caching,
+  secret redaction, bounded transient retries, and no client-side scope
+  authority.

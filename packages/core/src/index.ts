@@ -3,7 +3,6 @@ export type Fetch = typeof fetch;
 export interface AccessToken {
   accessToken: string;
   expiresAt: number;
-  scope?: string;
 }
 
 export interface TokenProvider {
@@ -30,6 +29,17 @@ export interface AetherClientConfig {
   timeoutMs?: number;
   maxRetries?: number;
   userAgent?: string;
+  onRetry?: (event: RetryEvent) => void;
+}
+
+export interface RetryEvent {
+  operation: string;
+  attempt: number;
+  maximumAttempts: number;
+  delayMs: number;
+  status: number;
+  code: string;
+  requestId?: string;
 }
 
 export interface RequestOptions<Body = unknown> {
@@ -169,7 +179,7 @@ export class OperationClient<Operations> {
       } catch (error) {
         if (!(error instanceof AetherError) || !canRetry || attempt >= this.#config.maxRetries || !retryable(error)) throw error;
         attempt += 1;
-        await delay(retryDelayMilliseconds(error, attempt), options.signal);
+        await this.#backoff(operationName, attempt, error, options.signal);
         continue;
       }
       if (operation.successStatuses.includes(response.status)) {
@@ -185,8 +195,22 @@ export class OperationClient<Operations> {
       const canRetryResponse = response.status === 401 ? canRefreshAuthorization : retryable(error);
       if (!canRetry || attempt >= this.#config.maxRetries || !canRetryResponse) throw error;
       attempt += 1;
-      await delay(retryDelayMilliseconds(error, attempt), options.signal);
+      await this.#backoff(operationName, attempt, error, options.signal);
     }
+  }
+
+  async #backoff(operation: string, attempt: number, error: AetherError, signal?: AbortSignal): Promise<void> {
+    const delayMs = retryDelayMilliseconds(error, attempt);
+    this.#config.onRetry?.({
+      operation,
+      attempt,
+      maximumAttempts: this.#config.maxRetries + 1,
+      delayMs,
+      status: error.status,
+      code: error.code,
+      ...(error.requestId ? {requestId: error.requestId} : {}),
+    });
+    await delay(delayMs, signal);
   }
 
   async #send(operation: OperationDefinition, options: RequestOptions, token: string): Promise<Response> {
