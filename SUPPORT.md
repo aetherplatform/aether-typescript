@@ -1,6 +1,6 @@
 # SDK Support
 
-Public beta SDK questions may be sent to `support@useather.co` or filed as a
+Public beta SDK questions may be sent to `support@useaether.co` or filed as a
 GitHub issue when they do not contain credentials, personal data, or security
 details.
 

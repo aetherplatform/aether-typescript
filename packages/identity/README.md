@@ -6,7 +6,7 @@ Identity. The browser-safe package root contains no client-secret code.
 ```ts
 import {IdentityClient} from "@aetherplatform/identity";
 
-const identity = new IdentityClient({baseUrl: "https://sandbox.auth.useather.co"});
+const identity = new IdentityClient({baseUrl: "https://auth-sandbox.useaether.co"});
 const authorize = identity.authorizationUrl({
   clientId: "your-client-id",
   redirectUri: "https://app.example.com/oauth/callback",
@@ -27,7 +27,7 @@ Confidential OAuth operations are server-only:
 import {ConfidentialIdentityClient} from "@aetherplatform/identity/server";
 
 const identity = new ConfidentialIdentityClient({
-  baseUrl: "https://sandbox.auth.useather.co",
+  baseUrl: "https://auth-sandbox.useaether.co",
   clientId: process.env.AETHER_CLIENT_ID!,
   clientSecret: process.env.AETHER_CLIENT_SECRET!,
 });
