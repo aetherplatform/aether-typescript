@@ -50,7 +50,7 @@ export class IdentityTransport {
     this.#fetch = config.fetch ?? globalThis.fetch;
     this.#timeoutMs = config.timeoutMs ?? 15_000;
     this.#maxRetries = config.maxRetries ?? 2;
-    this.#userAgent = config.userAgent ?? "aether-typescript-sdk/0.1.0-beta.1";
+    this.#userAgent = config.userAgent ?? "aether-typescript-sdk/0.1.0-beta.1.1";
     this.#onRetry = config.onRetry;
 
     if (!this.#fetch) throw new TypeError("A fetch implementation is required");

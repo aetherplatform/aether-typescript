@@ -1,25 +1,47 @@
 {
   "name": "@aetherplatform/identity",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.1.1",
   "description": "OAuth 2.0 Authorization Code with PKCE and OpenID Connect helpers for Aether Identity.",
   "license": "Apache-2.0",
   "author": "Aether",
   "type": "module",
-  "files": ["dist", "README.md", "LICENSE", "NOTICE", "CHANGELOG.md"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "CHANGELOG.md"
+  ],
   "exports": {
-    ".": {"types": "./dist/index.d.ts", "import": "./dist/index.js"},
-    "./server": {"types": "./dist/server.d.ts", "import": "./dist/server.js"}
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
   },
   "types": "./dist/index.d.ts",
-  "dependencies": {"@aetherplatform/core": "0.1.0-beta.1"},
+  "dependencies": {
+    "@aetherplatform/core": "0.1.0-beta.1.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aetherplatform/aether-typescript.git",
     "directory": "packages/identity"
   },
   "homepage": "https://github.com/aetherplatform/aether-typescript/tree/main/packages/identity#readme",
-  "bugs": {"url": "https://github.com/aetherplatform/aether-typescript/issues"},
-  "publishConfig": {"access": "public", "provenance": true, "tag": "next"},
-  "engines": {"node": ">=20"},
+  "bugs": {
+    "url": "https://github.com/aetherplatform/aether-typescript/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "tag": "next"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "sideEffects": false
 }

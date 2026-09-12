@@ -2,66 +2,45 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {verifyReleaseTags} from "../scripts/release-tags.mjs";
 
-const beta = {name: "@aetherplatform/core", version: "0.1.0-beta.1", tag: "next"};
+const beta = {name: "@aetherplatform/core", version: "0.1.0-beta.1.1", tag: "next"};
 
-function registry(initial, {removeWorks = true} = {}) {
-  const tags = {...initial};
-  const mutations = [];
-  const runNpm = (args) => {
-    if (args[0] === "view") {
-      assert.deepEqual(args, ["view", beta.name, "dist-tags", "--json", "--prefer-online"]);
-      return JSON.stringify(tags);
-    }
-    assert.deepEqual(args, ["dist-tag", "rm", beta.name, "latest"]);
-    mutations.push(args);
-    if (removeWorks) delete tags.latest;
-    return "";
+function registry(tags, versions = [beta.version]) {
+  return (args) => {
+    assert.equal(args[0], "view", "tag verification must not mutate registry tags");
+    assert.deepEqual(args, ["view", beta.name, args[2], "--json", "--prefer-online"]);
+    assert(["dist-tags", "versions"].includes(args[2]));
+    return JSON.stringify(args[2] === "dist-tags" ? tags : versions);
   };
-  return {tags, mutations, runNpm};
 }
 
-test("first beta removes npm's implicit latest tag and verifies next", () => {
-  const state = registry({next: beta.version, latest: beta.version});
-  verifyReleaseTags(beta, state.runNpm);
-  assert.deepEqual(state.tags, {next: beta.version});
-  assert.equal(state.mutations.length, 1);
+test("a preview-only package accepts npm's implicit latest tag", () => {
+  verifyReleaseTags(beta, registry({next: beta.version, latest: beta.version}));
 });
 
-test("a repeated release leaves a correct next-only package unchanged", () => {
-  const state = registry({next: beta.version});
-  verifyReleaseTags(beta, state.runNpm);
-  assert.equal(state.mutations.length, 0);
+test("a next-only preview does not require a latest tag", () => {
+  verifyReleaseTags(beta, registry({next: beta.version}));
 });
 
-test("a beta never removes an existing stable latest release", () => {
-  const state = registry({next: beta.version, latest: "0.0.9"});
-  verifyReleaseTags(beta, state.runNpm);
-  assert.equal(state.tags.latest, "0.0.9");
-  assert.equal(state.mutations.length, 0);
+test("a beta preserves a stable latest release", () => {
+  verifyReleaseTags(beta, registry({next: beta.version, latest: "0.1.0"}, ["0.1.0", beta.version]));
 });
 
-test("a missing or mismatched next tag fails before any mutation", () => {
-  for (const tags of [{latest: beta.version}, {next: "0.1.0-beta.2", latest: beta.version}]) {
-    const state = registry(tags);
-    assert.throws(() => verifyReleaseTags(beta, state.runNpm), /next does not point/);
-    assert.equal(state.mutations.length, 0);
+test("a missing or mismatched next tag fails", () => {
+  for (const tags of [{latest: beta.version}, {next: "0.1.0-beta.1", latest: beta.version}]) {
+    assert.throws(() => verifyReleaseTags(beta, registry(tags)), /next does not point/);
   }
 });
 
-test("a successful command with an unchanged invalid tag still fails", () => {
-  const state = registry({next: beta.version, latest: beta.version}, {removeWorks: false});
-  assert.throws(() => verifyReleaseTags(beta, state.runNpm), /violate the release policy/);
+test("a prerelease cannot occupy latest after a stable version exists", () => {
+  assert.throws(() => verifyReleaseTags(beta, registry({next: beta.version, latest: beta.version}, ["0.0.9", beta.version])), /violate the release policy/);
 });
 
-test("an unexpected different prerelease on latest fails without removing it", () => {
-  const state = registry({next: beta.version, latest: "0.2.0-beta.1"});
-  assert.throws(() => verifyReleaseTags(beta, state.runNpm), /violate the release policy/);
-  assert.equal(state.mutations.length, 0);
+test("preview-only latest may lag publication, but must reference a published version", () => {
+  const tags = {next: beta.version, latest: "0.1.0-beta.1"};
+  verifyReleaseTags(beta, registry(tags, ["0.1.0-beta.1", beta.version]));
+  assert.throws(() => verifyReleaseTags(beta, registry(tags)), /violate the release policy/);
 });
 
-test("a stable release verifies latest without changing the next channel", () => {
-  const state = registry({next: beta.version, latest: "0.1.0"});
-  verifyReleaseTags({...beta, version: "0.1.0", tag: "latest"}, state.runNpm);
-  assert.equal(state.tags.next, beta.version);
-  assert.equal(state.mutations.length, 0);
+test("a stable release verifies latest without changing next", () => {
+  verifyReleaseTags({...beta, version: "0.1.0", tag: "latest"}, registry({next: beta.version, latest: "0.1.0"}));
 });

@@ -64,8 +64,9 @@ an existing version.
 ### Before 1.0
 
 - `0.1.0-beta.1` is the first public beta.
-- Fixes and compatible improvements to the same beta line increment the
-  prerelease number: `0.1.0-beta.2`, `0.1.0-beta.3`, and so on.
+- Small fixes within beta.1 use `0.1.0-beta.1.1`, `0.1.0-beta.1.2`, and so on.
+- Advancing to `0.1.0-beta.2` is a separate maintainer decision, not an
+  automatic consequence of merging a fix.
 - `0.1.0-rc.1` starts release-candidate validation.
 - `0.1.0` is the first non-prerelease release on the initial-development
   (`0.x`) line.
@@ -82,8 +83,8 @@ The expected first progression is:
 
 ```text
 0.1.0-beta.1   first public beta
-0.1.0-beta.2   fixes and compatible improvements
-0.1.0-beta.3   additional fixes and compatible improvements
+0.1.0-beta.1.1 first small fix within beta.1
+0.1.0-beta.1.2 additional small fixes within beta.1
 0.1.0-rc.1     release candidate
 0.1.0          first non-prerelease 0.x release
 1.0.0          stable public API commitment
@@ -108,7 +109,13 @@ The expected first progression is:
 | Initial non-prerelease | `0.1.0` | `latest` | Production-usable initial-development release |
 | Stable API | `1.0.0` | `latest` | Formal public compatibility commitment |
 
-The `latest` tag must never point to a prerelease. Security fixes are released
+While a package has only preview versions, `next` and `latest` may both point
+at its current approved preview. This accommodates npm retaining `latest` on
+first publication and rejecting its deletion. The beta.1 fix release uses
+`0.1.0-beta.1.1` on both tags. Once any non-prerelease version exists, `latest`
+must point to a non-prerelease; later betas continue under `next` and preserve
+stable `latest`. Verify both tags after publication. Automated tag readback
+never attempts to delete npm's implicit tag. Security fixes are released
 as new immutable versions; tags may move, package contents may not.
 
 ## Package Coordination
@@ -149,9 +156,11 @@ are outputs of that process, not where the changelog is authored.
 6. The same committed changelog can be rendered later on the documentation
    website without creating a second source of truth.
 
-The first beta already has its target version in the package manifests. Later
-beta changes remain in Changesets prerelease mode, so a patch changes
-`0.1.0-beta.1` to `0.1.0-beta.2` rather than prematurely producing `0.1.0`.
+Changesets prepares synchronized changelogs and prerelease versions. Its
+default counter would advance beta.1 to beta.2; release PR review must apply
+the agreed beta.1 fix numbering before merge. The first fix release is
+`0.1.0-beta.1.1`. A fix PR alone does not change published versions, and an
+existing version is never republished.
 
 ## Release Gates
 

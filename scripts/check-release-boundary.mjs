@@ -22,7 +22,7 @@ const core = await readJson("packages/core/package.json");
 const releaseVersion = core.version;
 const releaseTag = releaseVersion.includes("-") ? "next" : "latest";
 
-if (!/^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)\.\d+)?$/.test(releaseVersion)) {
+if (!/^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)\.\d+(?:\.\d+)?)?$/.test(releaseVersion)) {
   throw new Error(`unsupported public release version: ${releaseVersion}`);
 }
 
