@@ -12,24 +12,33 @@ for (const mode of ["timeout", "caller abort"]) {
   test(`response body remains covered by ${mode} after headers arrive`, async (t) => {
     const caller = new AbortController();
     let requests = 0;
-    const server = createServer((_request, response) => {
+    const server = createServer((request, response) => {
+      if (request.url === "/warmup") {
+        response.end("{}");
+        return;
+      }
       requests += 1;
       response.writeHead(200, {"content-type": "application/json"});
       response.flushHeaders();
       // Let the old implementation finish too, so a regression fails instead of hanging.
-      const timer = setTimeout(() => response.end('{"ok":true}'), 500);
+      const timer = setTimeout(() => response.end('{"ok":true}'), 5_000);
       response.on("close", () => clearTimeout(timer));
     });
     server.listen(0, "127.0.0.1");
     await once(server, "listening");
     t.after(() => { server.closeAllConnections(); server.close(); });
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    // Warm up HTTP connection setup so the deadline exercises body consumption.
+    await (await fetch(`${baseUrl}/warmup`)).text();
+    let receivedHeaders = false;
     const client = new OperationClient({
-      baseUrl: `http://127.0.0.1:${server.address().port}`,
+      baseUrl,
       tokenProvider,
-      timeoutMs: mode === "timeout" ? 100 : 2_000,
+      timeoutMs: mode === "timeout" ? 1_000 : 5_000,
       maxRetries: mode === "timeout" ? 0 : 2,
       fetch: async (...args) => {
         const response = await fetch(...args);
+        receivedHeaders = true;
         if (mode === "caller abort") setTimeout(() => caller.abort(), 20);
         return response;
       },
@@ -39,6 +48,7 @@ for (const mode of ["timeout", "caller abort"]) {
       assert.equal(error.code, mode === "timeout" ? "request_timeout" : "request_aborted");
       return true;
     });
+    assert.equal(receivedHeaders, true);
     assert.equal(requests, 1);
   });
 }
