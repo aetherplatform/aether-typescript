@@ -150,7 +150,7 @@ export class OperationClient<Operations> {
   readonly #operations: Record<keyof Operations & string, OperationDefinition>;
 
   constructor(config: AetherClientConfig, operations: Record<keyof Operations & string, OperationDefinition>) {
-    this.#config = {timeoutMs: 15_000, maxRetries: 2, userAgent: "aether-typescript-sdk/0.1.0-beta.1", ...config};
+    this.#config = {timeoutMs: 15_000, maxRetries: 2, userAgent: "aether-typescript-sdk/0.1.0-beta.1.1", ...config};
     this.#fetch = config.fetch ?? globalThis.fetch;
     this.#operations = operations;
     if (!this.#fetch) throw new TypeError("A fetch implementation is required");

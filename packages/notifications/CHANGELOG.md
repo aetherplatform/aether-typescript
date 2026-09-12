@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-beta.1.1
+
+### Patch Changes
+
+- Updated dependencies [3b6a409]
+  - @aetherplatform/core@0.1.0-beta.1.1
+
 ## 0.1.0-beta.1
 
 ### Added
