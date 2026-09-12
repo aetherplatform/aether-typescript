@@ -168,14 +168,16 @@ export class OperationClient<Operations> {
   ): Promise<OperationResponse<Operations[Name]>> {
     const operation = this.#operations[operationName];
     if (!operation) throw new TypeError(`Unknown operation: ${operationName}`);
-    const canRetry = retrySafe(operation, options);
+    const body = options.body === undefined ? undefined : JSON.stringify(options.body);
+    const canRetry = retrySafe(operation, options, body);
     let attempt = 0;
 
     while (true) {
       const token = await this.#config.tokenProvider.getToken();
       let response: Response;
+      let payload: unknown;
       try {
-        response = await this.#send(operation, options, token.accessToken);
+        ({response, payload} = await this.#send(operation, options, token.accessToken, body));
       } catch (error) {
         if (!(error instanceof AetherError) || !canRetry || attempt >= this.#config.maxRetries || !retryable(error)) throw error;
         attempt += 1;
@@ -183,10 +185,9 @@ export class OperationClient<Operations> {
         continue;
       }
       if (operation.successStatuses.includes(response.status)) {
-        return (await readJson(response)) as OperationResponse<Operations[Name]>;
+        return payload as OperationResponse<Operations[Name]>;
       }
 
-      const payload = await readJson(response);
       const error = errorFromResponse(response, payload);
       const canRefreshAuthorization = response.status === 401
         && attempt === 0
@@ -213,7 +214,7 @@ export class OperationClient<Operations> {
     await delay(delayMs, signal);
   }
 
-  async #send(operation: OperationDefinition, options: RequestOptions, token: string): Promise<Response> {
+  async #send(operation: OperationDefinition, options: RequestOptions, token: string, body: string | undefined): Promise<{response: Response; payload: unknown}> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.#config.timeoutMs);
     const abort = () => controller.abort();
@@ -231,17 +232,19 @@ export class OperationClient<Operations> {
       headers.set("x-request-id", options.requestId ?? crypto.randomUUID());
       if (options.correlationId) headers.set("x-correlation-id", options.correlationId);
       if (options.idempotencyKey) headers.set("idempotency-key", options.idempotencyKey);
-      if (options.body !== undefined) headers.set("content-type", "application/json");
+      if (body !== undefined) headers.set("content-type", "application/json");
 
       try {
-        return await this.#fetch(buildUrl(this.#config.baseUrl, operation.path, options.path, options.query), {
+        const response = await this.#fetch(buildUrl(this.#config.baseUrl, operation.path, options.path, options.query), {
           method: operation.method,
           headers,
-          ...(options.body === undefined ? {} : {body: JSON.stringify(options.body)}),
+          ...(body === undefined ? {} : {body}),
           signal: controller.signal,
         });
+        return {response, payload: await readJson(response)};
       } catch (error) {
-        const aborted = error instanceof Error && error.name === "AbortError";
+        if (error instanceof AetherError) throw error;
+        const aborted = controller.signal.aborted || (error instanceof Error && error.name === "AbortError");
         const code = aborted ? (options.signal?.aborted ? "request_aborted" : "request_timeout") : "network_error";
         const message = code === "request_aborted"
           ? "Aether request was aborted"
@@ -275,13 +278,14 @@ function buildUrl(
   return url.toString();
 }
 
-function retrySafe(operation: OperationDefinition, options: RequestOptions): boolean {
+function retrySafe(operation: OperationDefinition, options: RequestOptions, body: string | undefined): boolean {
   if (["GET", "HEAD", "OPTIONS"].includes(operation.method)) return true;
   if (operation.idempotency === "required" || operation.idempotency === "optional") {
     return Boolean(options.idempotencyKey);
   }
   if (operation.idempotency === "request_field") {
-    return typeof options.body === "object" && options.body !== null && "idempotency_key" in options.body;
+    const key = body === undefined ? undefined : JSON.parse(body)?.idempotency_key;
+    return typeof key === "string" && key.trim().length > 0;
   }
   return false;
 }
@@ -315,14 +319,19 @@ async function delay(milliseconds: number, signal?: AbortSignal): Promise<void> 
   });
 }
 
-async function readJson(response: Response): Promise<any> {
+async function readJson(response: Response): Promise<unknown> {
   if (response.status === 204) return undefined;
   const text = await response.text();
   if (!text) return undefined;
   try {
     return JSON.parse(text);
   } catch {
-    return undefined;
+    throw new AetherError({
+      status: response.status,
+      code: "invalid_response",
+      message: "Aether returned an invalid JSON response",
+      ...(response.headers.get("x-request-id") ? {requestId: response.headers.get("x-request-id")!} : {}),
+    });
   }
 }
 
