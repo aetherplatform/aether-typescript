@@ -2,6 +2,7 @@ import {readFile} from "node:fs/promises";
 import {spawnSync} from "node:child_process";
 import {fileURLToPath} from "node:url";
 import path from "node:path";
+import {verifyReleaseTags} from "./release-tags.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dryRun = process.argv.includes("--dry-run");
@@ -74,6 +75,7 @@ for (const release of releases) {
       const versions = [JSON.parse(publishedVersions)].flat();
       if (versions.includes(release.version)) {
         console.log(`${release.name}@${release.version} is already immutable on npm; skipping`);
+        verifyReleaseTags(release, runNpm);
         continue;
       }
 
@@ -87,6 +89,7 @@ for (const release of releases) {
 
   if (existing !== null) {
     console.log(`${release.name}@${release.version} is already immutable on npm; skipping`);
+    verifyReleaseTags(release, runNpm);
     continue;
   }
 
@@ -100,5 +103,6 @@ for (const release of releases) {
     release.tag,
     "--provenance",
   ]);
+  verifyReleaseTags(release, runNpm);
   console.log(`New tag: ${release.name}@${release.version}`);
 }
