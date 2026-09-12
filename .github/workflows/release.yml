@@ -40,6 +40,8 @@ jobs:
           version: npm run version-packages
           commit: "chore(release): version packages"
           title: "chore(release): version packages"
+          # The custom publisher does not create local git tags.
+          commitMode: github-api
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AETHER_NPM_AUTH_MODE: trusted-publishing
