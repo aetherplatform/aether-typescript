@@ -1,3 +1,18 @@
+import {setTimeout as sleep} from "node:timers/promises";
+
+export async function waitForReleaseTags(release, runNpm, {attempts = 25, delayMs = 5_000, wait = sleep} = {}) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      verifyReleaseTags(release, runNpm);
+      return;
+    } catch (error) {
+      if (attempt >= attempts) throw error;
+      console.log(`${release.name}: waiting for registry tag propagation (${attempt}/${attempts})`);
+      await wait(delayMs);
+    }
+  }
+}
+
 export function verifyReleaseTags(release, runNpm) {
   const tags = JSON.parse(runNpm(["view", release.name, "dist-tags", "--json", "--prefer-online"]));
   if (tags[release.tag] !== release.version) {
