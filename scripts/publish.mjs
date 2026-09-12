@@ -2,17 +2,23 @@ import {readFile} from "node:fs/promises";
 import {spawnSync} from "node:child_process";
 import {fileURLToPath} from "node:url";
 import path from "node:path";
-import {verifyReleaseTags} from "./release-tags.mjs";
+import {waitForReleaseTags} from "./release-tags.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dryRun = process.argv.includes("--dry-run");
 const packageDirectories = ["core", "identity", "events", "notifications", "storage", "webhooks"];
 const authMode = process.env.AETHER_NPM_AUTH_MODE;
 
-function runNpm(args, {allowNotFound = false} = {}) {
+function runNpm(args, {allowNotFound = false, showOutput = false} = {}) {
   const result = spawnSync("npm", args, {cwd: root, encoding: "utf8"});
 
-  if (result.status === 0) return result.stdout.trim();
+  if (result.status === 0) {
+    if (showOutput) {
+      process.stdout.write(result.stdout);
+      process.stderr.write(result.stderr);
+    }
+    return result.stdout.trim();
+  }
 
   const output = `${result.stdout}\n${result.stderr}`;
   if (allowNotFound && /E404|404 Not Found|is not in this registry/i.test(output)) return null;
@@ -75,7 +81,7 @@ for (const release of releases) {
       const versions = [JSON.parse(publishedVersions)].flat();
       if (versions.includes(release.version)) {
         console.log(`${release.name}@${release.version} is already immutable on npm; skipping`);
-        verifyReleaseTags(release, runNpm);
+        await waitForReleaseTags(release, runNpm);
         continue;
       }
 
@@ -89,7 +95,7 @@ for (const release of releases) {
 
   if (existing !== null) {
     console.log(`${release.name}@${release.version} is already immutable on npm; skipping`);
-    verifyReleaseTags(release, runNpm);
+    await waitForReleaseTags(release, runNpm);
     continue;
   }
 
@@ -102,7 +108,7 @@ for (const release of releases) {
     "--tag",
     release.tag,
     "--provenance",
-  ]);
-  verifyReleaseTags(release, runNpm);
+  ], {showOutput: true});
+  await waitForReleaseTags(release, runNpm);
   console.log(`New tag: ${release.name}@${release.version}`);
 }
