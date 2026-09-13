@@ -2,13 +2,14 @@
 
 This workspace contains the TypeScript SDK for the Aether managed platform.
 Core, Identity, Events, Notifications, Storage, and Webhooks are published under
-the `@aetherplatform` scope at **`0.1.0-beta.1.1`**. As of 2026-09-12, both
-`next` and `latest` point to this preview; neither tag implies a stable release.
+the `@aetherplatform` scope at **`0.1.0-beta.1.2`**. As of 2026-09-13,
+`next` points to this preview. Pin the exact version; npm tags do not imply
+a stable release.
 Use this corrected version for new integrations and pin the version during
 evaluation:
 
 ```sh
-npm install --save-exact @aetherplatform/events@0.1.0-beta.1.1
+npm install --save-exact @aetherplatform/events@0.1.0-beta.1.2
 ```
 
 Install the platform packages you need; each depends on the matching Core
@@ -17,11 +18,12 @@ version. The public repository is
 The initial bootstrap is complete. Subsequent releases use protected npm
 trusted publishing and must pass the hosted sandbox gate for each candidate.
 
-Passwordless support on this branch is an unreleased beta candidate and is not
-included in `0.1.0-beta.1.1`. It requires an enabled registered client and
-configured delivery in the target Identity environment. The next release also
-requires hosted passwordless acceptance in addition to the existing sandbox
-checks.
+Passwordless support is included in `0.1.0-beta.1.2`. Controlled sandbox email
+acceptance passed for public clients, confidential clients, and hosted browser
+consent approval/denial, including a flow using both TypeScript and Go SDKs.
+It requires an enabled registered client and configured delivery in the target
+Identity environment. SMS methods are included, but real SMS provider delivery
+remains unverified.
 
 The SDK contains only public wire contracts and customer-safe behavior. It does
 not contain service-JWT signing, Aether runtime modules, NATS subjects,
@@ -74,7 +76,7 @@ The one-time `.github/workflows/bootstrap-release.yml` workflow is disabled and
 its temporary npm token has been removed. All six packages have `release.yml`
 configured as their trusted publisher, and `AETHER_SDK_RELEASE_ENABLED=true`
 enables the permanent workflow. It rejects npm tokens and uses only GitHub OIDC.
-See the [protected verification run](https://github.com/aetherplatform/aether-typescript/actions/runs/34667810322)
+See the [protected verification run](https://github.com/aetherplatform/aether-typescript/actions/runs/34786793039)
 for the completed release checks. npm exposes provenance for each published
 package version.
 
