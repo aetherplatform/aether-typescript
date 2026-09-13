@@ -2,9 +2,9 @@
   "openapi": "3.1.0",
   "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
   "info": {
-    "title": "Aether Identity OAuth and OpenID Connect API",
+    "title": "Aether Identity Passwordless, OAuth and OpenID Connect API",
     "version": "1.0.0",
-    "description": "OAuth 2.0 Authorization Code with PKCE and confidential server client-credentials endpoints. Hosted browser forms and internal native authentication are not SDK APIs."
+    "description": "Public passwordless email/SMS challenges advance OAuth 2.0 authorization with S256 PKCE. Confidential backend and secretless public browser/mobile clients use the same OAuth/OIDC tokens. Client credentials remain confidential-only. Passwordless requires operator enablement for the registered client and configured Notifications delivery. Contract availability does not imply a hosted deployment is enabled. Hosted browser forms and internal native authentication are not SDK APIs."
   },
   "tags": [
     {
@@ -12,6 +12,9 @@
     },
     {
       "name": "OAuth"
+    },
+    {
+      "name": "Passwordless"
     }
   ],
   "paths": {
@@ -95,6 +98,17 @@
                       "type": "array",
                       "items": {
                         "type": "string"
+                      }
+                    },
+                    "token_endpoint_auth_methods_supported": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "client_secret_basic",
+                          "client_secret_post",
+                          "none"
+                        ]
                       }
                     },
                     "id_token_signing_alg_values_supported": {
@@ -1890,20 +1904,36 @@
         ],
         "summary": "Exchange an authorization code, refresh token, or client credentials",
         "operationId": "exchangeOAuthToken",
+        "description": "Confidential clients authenticate with HTTP Basic (or the existing client_secret_post form credentials). Registered public clients send client_id without a secret for authorization_code and refresh_token only. Authorization-code exchange requires the original redirect_uri and S256 code_verifier. Codes and refresh tokens are single use; do not retry automatically. Refresh-token reuse revokes the token family.",
         "security": [
           {
             "clientSecretBasic": [
 
             ]
+          },
+          {
           }
         ],
         "x-aether-token-profiles": [
-          "confidential_client"
+          "confidential_client",
+          "public_client"
         ],
+        "x-aether-idempotency": "unsupported",
         "x-aether-required-capability": null,
         "x-aether-availability": [
           "sandbox",
           "live"
+        ],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "required": false,
+            "description": "Browser CORS routing hint. Include the registered client ID in the URL so OPTIONS preflight can check the exact registered Origin. It must match the authenticated client and body client_id. Native callers need not send an Origin. This hint and Origin checks do not authenticate a client.",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "required": true,
@@ -1923,6 +1953,15 @@
                       "refresh_token",
                       "client_credentials"
                     ]
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "Required for public clients and client_secret_post authentication."
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "writeOnly": true,
+                    "description": "Confidential server clients only; never embed in browsers or mobile apps."
                   },
                   "code": {
                     "type": "string"
@@ -1946,6 +1985,11 @@
                     "type": "string"
                   }
                 }
+              },
+              "example": {
+                "grant_type": "client_credentials",
+                "audience": "aether-events",
+                "scope": "events:catalog/*:read events:schemas/*:read"
               }
             }
           }
@@ -2527,20 +2571,35 @@
         ],
         "summary": "Revoke an OAuth token",
         "operationId": "revokeOAuthToken",
+        "description": "Confidential clients authenticate with registered credentials. Public clients provide client_id and may revoke only their own presented tokens. Unknown tokens return success. Revocation remains available when passwordless is disabled for the client.",
         "security": [
           {
             "clientSecretBasic": [
 
             ]
+          },
+          {
           }
         ],
         "x-aether-token-profiles": [
-          "confidential_client"
+          "confidential_client",
+          "public_client"
         ],
         "x-aether-required-capability": null,
         "x-aether-availability": [
           "sandbox",
           "live"
+        ],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "required": false,
+            "description": "Browser CORS routing hint. Include the registered client ID in the URL so OPTIONS preflight can check the exact registered Origin. It must match the authenticated client and body client_id. Native callers need not send an Origin. This hint and Origin checks do not authenticate a client.",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "required": true,
@@ -2553,6 +2612,15 @@
                   "token"
                 ],
                 "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "description": "Required for public-client revocation or client_secret_post authentication."
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "writeOnly": true,
+                    "description": "Confidential server clients only."
+                  },
                   "token": {
                     "type": "string"
                   },
@@ -3029,6 +3097,7 @@
         ],
         "summary": "Introspect an OAuth token owned by the client",
         "operationId": "introspectOAuthToken",
+        "description": "Restricted to authenticated confidential clients. Public clients cannot introspect tokens.",
         "security": [
           {
             "clientSecretBasic": [
@@ -3055,6 +3124,15 @@
                   "token"
                 ],
                 "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "description": "Required for public-client revocation or client_secret_post authentication."
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "writeOnly": true,
+                    "description": "Confidential server clients only."
+                  },
                   "token": {
                     "type": "string"
                   },
@@ -3577,6 +3655,18 @@
         ],
         "summary": "Read claims for an OAuth user access token",
         "operationId": "getUserInfo",
+        "description": "Browser requests include the registered client_id query hint for exact Origin checks. The access token must belong to that client. Native and backend callers may omit the hint when no Origin is sent.",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "required": false,
+            "description": "Browser CORS routing hint. Include the registered client ID in the URL so OPTIONS preflight can check the exact registered Origin. It must match the authenticated client and body client_id. Native callers need not send an Origin. This hint and Origin checks do not authenticate a client.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "bearerAuth": [
@@ -4143,6 +4233,1267 @@
           }
         }
       }
+    },
+    "/v1/passwordless/start": {
+      "post": {
+        "tags": [
+          "Passwordless"
+        ],
+        "summary": "Send an email or SMS sign-in code",
+        "description": "Create an OAuth authorization transaction bound to the registered client context, exact redirect URI, scopes, state, nonce and S256 PKCE challenge. Unknown identifiers are represented by fingerprints. Resend only after an explicit user action by calling start again; it creates a new transaction and supersedes the previous pending challenge. The OTP expires after five minutes, the transaction after ten minutes, and resend requires a 60-second interval. Identifier/client, trusted source IP and client send limits apply. No automatic retries.",
+        "operationId": "startPasswordless",
+        "security": [
+          {
+            "clientSecretBasic": [
+
+            ]
+          },
+          {
+          }
+        ],
+        "x-aether-token-profiles": [
+          "confidential_client",
+          "public_client"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "x-aether-idempotency": "unsupported",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "required": false,
+            "description": "Browser CORS routing hint. Include the registered client ID in the URL so OPTIONS preflight can check the exact registered Origin. It must match the authenticated client and body client_id. Native callers need not send an Origin. This hint and Origin checks do not authenticate a client.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "identifier",
+                  "channel",
+                  "redirect_uri",
+                  "code_challenge",
+                  "code_challenge_method"
+                ],
+                "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "description": "Required for public clients; optional with confidential HTTP Basic authentication."
+                  },
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Email address or phone number for the enabled channel."
+                  },
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "email",
+                      "sms"
+                    ]
+                  },
+                  "redirect_uri": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Exact registered HTTPS callback; explicitly registered loopback HTTP is development-only."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "default": "openid",
+                    "description": "Space-separated registered OAuth scopes. Include offline_access when refresh tokens are required."
+                  },
+                  "state": {
+                    "type": "string",
+                    "maxLength": 1024,
+                    "description": "Caller-generated callback binding; recommended for every browser or mobile flow."
+                  },
+                  "nonce": {
+                    "type": "string",
+                    "maxLength": 1024
+                  },
+                  "code_challenge": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43,
+                    "pattern": "^[A-Za-z0-9_-]{43}$"
+                  },
+                  "code_challenge_method": {
+                    "type": "string",
+                    "const": "S256"
+                  },
+                  "response_type": {
+                    "type": "string",
+                    "const": "code",
+                    "default": "code"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Code delivery accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "transaction",
+                    "challenge_id",
+                    "expires_in",
+                    "resend_after",
+                    "transaction_expires_in"
+                  ],
+                  "properties": {
+                    "transaction": {
+                      "type": "string",
+                      "description": "Opaque transaction credential. Keep it out of URLs and logs."
+                    },
+                    "challenge_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "const": 300
+                    },
+                    "resend_after": {
+                      "type": "integer",
+                      "const": 60
+                    },
+                    "transaction_expires_in": {
+                      "type": "integer",
+                      "const": 600
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, expired, superseded or already used transaction/challenge; wrong OTP or PKCE; invalid completion details. No credentials are included in error details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid client authentication. Confidential clients must use HTTP Basic; public clients must send client_id without a secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Browser Origin is not exactly registered, or the client is not approved for custom completion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Resend cooldown or an identifier/client, trusted-source-IP, or client send limit was exceeded. Sending again is an explicit user action after the indicated delay.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before another explicit send attempt.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Delivery, limit enforcement, signing or another required dependency is unavailable; the request fails closed. Do not automatically retry a mutation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Delivery, limit enforcement, signing or another required dependency is unavailable; the request fails closed. Do not automatically retry a mutation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/passwordless/verify": {
+      "post": {
+        "tags": [
+          "Passwordless"
+        ],
+        "summary": "Verify a transaction-bound sign-in code",
+        "description": "Verify the OTP and PKCE proof for the transaction. After five incorrect attempts the challenge is unusable. Return an authorization code when registration and consent are already satisfied, a short-lived hosted continuation URL by default, or custom requirements only when the registered client is explicitly approved for custom completion. The authorization code is exchanged separately at /oauth/token with the same PKCE verifier. No automatic retries.",
+        "operationId": "verifyPasswordless",
+        "security": [
+          {
+            "clientSecretBasic": [
+
+            ]
+          },
+          {
+          }
+        ],
+        "x-aether-token-profiles": [
+          "confidential_client",
+          "public_client"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "x-aether-idempotency": "unsupported",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "required": false,
+            "description": "Browser CORS routing hint. Include the registered client ID in the URL so OPTIONS preflight can check the exact registered Origin. It must match the authenticated client and body client_id. Native callers need not send an Origin. This hint and Origin checks do not authenticate a client.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "transaction",
+                  "challenge_id",
+                  "identifier",
+                  "channel",
+                  "code",
+                  "code_verifier"
+                ],
+                "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "description": "Required for public clients; must identify the original client."
+                  },
+                  "transaction": {
+                    "type": "string"
+                  },
+                  "challenge_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "email",
+                      "sms"
+                    ]
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[0-9]{6}$",
+                    "writeOnly": true
+                  },
+                  "code_verifier": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9._~-]{43,128}$",
+                    "writeOnly": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction outcome. Handle the status discriminator explicitly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "status",
+                        "code",
+                        "state"
+                      ],
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "authorized"
+                        },
+                        "code": {
+                          "type": "string",
+                          "description": "Single-use OAuth authorization code; exchange with the original redirect URI and PKCE verifier."
+                        },
+                        "state": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "status",
+                        "continuation_url",
+                        "expires_in"
+                      ],
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "hosted_completion_required"
+                        },
+                        "continuation_url": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "Short-lived one-use Aether browser handoff. Open in a browser; do not call it as an SDK JSON operation or log the URL. Does not create a general SSO session."
+                        },
+                        "expires_in": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 300
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "status",
+                        "continuation",
+                        "expires_in",
+                        "requirements"
+                      ],
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "custom_completion_required"
+                        },
+                        "continuation": {
+                          "type": "string"
+                        },
+                        "expires_in": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 300
+                        },
+                        "requirements": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "registration",
+                            "consent",
+                            "scopes",
+                            "aether_terms_version",
+                            "aether_privacy_version"
+                          ],
+                          "properties": {
+                            "registration": {
+                              "type": "boolean"
+                            },
+                            "consent": {
+                              "type": "boolean"
+                            },
+                            "scopes": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "aether_terms_version": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "aether_privacy_version": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "status"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, expired, superseded or already used transaction/challenge; wrong OTP or PKCE; invalid completion details. No credentials are included in error details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid client authentication. Confidential clients must use HTTP Basic; public clients must send client_id without a secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Browser Origin is not exactly registered, or the client is not approved for custom completion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Resend cooldown or an identifier/client, trusted-source-IP, or client send limit was exceeded. Sending again is an explicit user action after the indicated delay.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before another explicit send attempt.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Delivery, limit enforcement, signing or another required dependency is unavailable; the request fails closed. Do not automatically retry a mutation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Delivery, limit enforcement, signing or another required dependency is unavailable; the request fails closed. Do not automatically retry a mutation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/passwordless/complete": {
+      "post": {
+        "tags": [
+          "Passwordless"
+        ],
+        "summary": "Complete approved custom registration and consent",
+        "description": "Available only to clients explicitly approved for custom completion. Send the continuation handle and original PKCE verifier, then approve with the outstanding registration details and consent versions or deny. Server-side client policy determines availability; no request parameter can bypass hosted completion. Approval returns an OAuth code; denial returns access_denied and the original state. No automatic retries.",
+        "operationId": "completePasswordless",
+        "security": [
+          {
+            "clientSecretBasic": [
+
+            ]
+          },
+          {
+          }
+        ],
+        "x-aether-token-profiles": [
+          "confidential_client",
+          "public_client"
+        ],
+        "x-aether-required-capability": null,
+        "x-aether-availability": [
+          "sandbox",
+          "live"
+        ],
+        "x-aether-idempotency": "unsupported",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "required": false,
+            "description": "Browser CORS routing hint. Include the registered client ID in the URL so OPTIONS preflight can check the exact registered Origin. It must match the authenticated client and body client_id. Native callers need not send an Origin. This hint and Origin checks do not authenticate a client.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "continuation",
+                  "code_verifier",
+                  "decision"
+                ],
+                "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "description": "Required for public clients; must identify the original approved client."
+                  },
+                  "continuation": {
+                    "type": "string",
+                    "description": "Opaque handle returned by custom_completion_required."
+                  },
+                  "code_verifier": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9._~-]{43,128}$",
+                    "writeOnly": true
+                  },
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "deny"
+                    ]
+                  },
+                  "identifier": {
+                    "type": "string",
+                    "description": "Required when registration is outstanding; must match the verified identifier."
+                  },
+                  "profile": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "display_name": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "consent": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Required on registration approval; send the exact versions returned in requirements after the user accepts them.",
+                    "required": [
+                      "aether_terms_version",
+                      "aether_privacy_version"
+                    ],
+                    "properties": {
+                      "aether_terms_version": {
+                        "type": "string"
+                      },
+                      "aether_privacy_version": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction outcome. Handle the status discriminator explicitly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "status",
+                        "code",
+                        "state"
+                      ],
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "authorized"
+                        },
+                        "code": {
+                          "type": "string",
+                          "description": "Single-use OAuth authorization code; exchange with the original redirect URI and PKCE verifier."
+                        },
+                        "state": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "status",
+                        "error",
+                        "state"
+                      ],
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "denied"
+                        },
+                        "error": {
+                          "type": "string",
+                          "const": "access_denied"
+                        },
+                        "state": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "status"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, expired, superseded or already used transaction/challenge; wrong OTP or PKCE; invalid completion details. No credentials are included in error details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid client authentication. Confidential clients must use HTTP Basic; public clients must send client_id without a secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Browser Origin is not exactly registered, or the client is not approved for custom completion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Resend cooldown or an identifier/client, trusted-source-IP, or client send limit was exceeded. Sending again is an explicit user action after the indicated delay.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before another explicit send attempt.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Delivery, limit enforcement, signing or another required dependency is unavailable; the request fails closed. Do not automatically retry a mutation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Delivery, limit enforcement, signing or another required dependency is unavailable; the request fails closed. Do not automatically retry a mutation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "code"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_PASSWORDLESS_REQUEST",
+                            "INVALID_CLIENT",
+                            "ORIGIN_NOT_ALLOWED",
+                            "CUSTOM_COMPLETION_NOT_ALLOWED",
+                            "RATE_LIMITED",
+                            "TEMPORARILY_UNAVAILABLE",
+                            "IDENTITY_ROLE_UNAVAILABLE"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4159,7 +5510,805 @@
         "description": "Registered confidential OAuth client credentials."
       }
     },
+    "parameters": {
+      "BrowserClientId": {
+        "name": "client_id",
+        "in": "query",
+        "required": false,
+        "description": "Browser CORS routing hint. Include the registered client ID in the URL so OPTIONS preflight can check the exact registered Origin. It must match the authenticated client and body client_id. Native callers need not send an Origin. This hint and Origin checks do not authenticate a client.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "InvalidPasswordlessRequest": {
+        "description": "Invalid, expired, superseded or already used transaction/challenge; wrong OTP or PKCE; invalid completion details. No credentials are included in error details.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "code"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "INVALID_REQUEST",
+                        "INVALID_PASSWORDLESS_REQUEST",
+                        "INVALID_CLIENT",
+                        "ORIGIN_NOT_ALLOWED",
+                        "CUSTOM_COMPLETION_NOT_ALLOWED",
+                        "RATE_LIMITED",
+                        "TEMPORARILY_UNAVAILABLE",
+                        "IDENTITY_ROLE_UNAVAILABLE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "InvalidPasswordlessClient": {
+        "description": "Missing or invalid client authentication. Confidential clients must use HTTP Basic; public clients must send client_id without a secret.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "code"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "INVALID_REQUEST",
+                        "INVALID_PASSWORDLESS_REQUEST",
+                        "INVALID_CLIENT",
+                        "ORIGIN_NOT_ALLOWED",
+                        "CUSTOM_COMPLETION_NOT_ALLOWED",
+                        "RATE_LIMITED",
+                        "TEMPORARILY_UNAVAILABLE",
+                        "IDENTITY_ROLE_UNAVAILABLE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "PasswordlessForbidden": {
+        "description": "Browser Origin is not exactly registered, or the client is not approved for custom completion.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "code"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "INVALID_REQUEST",
+                        "INVALID_PASSWORDLESS_REQUEST",
+                        "INVALID_CLIENT",
+                        "ORIGIN_NOT_ALLOWED",
+                        "CUSTOM_COMPLETION_NOT_ALLOWED",
+                        "RATE_LIMITED",
+                        "TEMPORARILY_UNAVAILABLE",
+                        "IDENTITY_ROLE_UNAVAILABLE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "PasswordlessRateLimited": {
+        "description": "Resend cooldown or an identifier/client, trusted-source-IP, or client send limit was exceeded. Sending again is an explicit user action after the indicated delay.",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds to wait before another explicit send attempt.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "code"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "INVALID_REQUEST",
+                        "INVALID_PASSWORDLESS_REQUEST",
+                        "INVALID_CLIENT",
+                        "ORIGIN_NOT_ALLOWED",
+                        "CUSTOM_COMPLETION_NOT_ALLOWED",
+                        "RATE_LIMITED",
+                        "TEMPORARILY_UNAVAILABLE",
+                        "IDENTITY_ROLE_UNAVAILABLE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "PasswordlessUnavailable": {
+        "description": "Delivery, limit enforcement, signing or another required dependency is unavailable; the request fails closed. Do not automatically retry a mutation.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "error"
+              ],
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "code"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "INVALID_REQUEST",
+                        "INVALID_PASSWORDLESS_REQUEST",
+                        "INVALID_CLIENT",
+                        "ORIGIN_NOT_ALLOWED",
+                        "CUSTOM_COMPLETION_NOT_ALLOWED",
+                        "RATE_LIMITED",
+                        "TEMPORARILY_UNAVAILABLE",
+                        "IDENTITY_ROLE_UNAVAILABLE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "schemas": {
+      "PasswordlessStartRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "identifier",
+          "channel",
+          "redirect_uri",
+          "code_challenge",
+          "code_challenge_method"
+        ],
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "Required for public clients; optional with confidential HTTP Basic authentication."
+          },
+          "identifier": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Email address or phone number for the enabled channel."
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "sms"
+            ]
+          },
+          "redirect_uri": {
+            "type": "string",
+            "format": "uri",
+            "description": "Exact registered HTTPS callback; explicitly registered loopback HTTP is development-only."
+          },
+          "scope": {
+            "type": "string",
+            "default": "openid",
+            "description": "Space-separated registered OAuth scopes. Include offline_access when refresh tokens are required."
+          },
+          "state": {
+            "type": "string",
+            "maxLength": 1024,
+            "description": "Caller-generated callback binding; recommended for every browser or mobile flow."
+          },
+          "nonce": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "code_challenge": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43,
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "code_challenge_method": {
+            "type": "string",
+            "const": "S256"
+          },
+          "response_type": {
+            "type": "string",
+            "const": "code",
+            "default": "code"
+          }
+        }
+      },
+      "PasswordlessStartResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "transaction",
+          "challenge_id",
+          "expires_in",
+          "resend_after",
+          "transaction_expires_in"
+        ],
+        "properties": {
+          "transaction": {
+            "type": "string",
+            "description": "Opaque transaction credential. Keep it out of URLs and logs."
+          },
+          "challenge_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expires_in": {
+            "type": "integer",
+            "const": 300
+          },
+          "resend_after": {
+            "type": "integer",
+            "const": 60
+          },
+          "transaction_expires_in": {
+            "type": "integer",
+            "const": 600
+          }
+        }
+      },
+      "PasswordlessVerifyRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "transaction",
+          "challenge_id",
+          "identifier",
+          "channel",
+          "code",
+          "code_verifier"
+        ],
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "Required for public clients; must identify the original client."
+          },
+          "transaction": {
+            "type": "string"
+          },
+          "challenge_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "identifier": {
+            "type": "string",
+            "minLength": 1
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email",
+              "sms"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "writeOnly": true
+          },
+          "code_verifier": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9._~-]{43,128}$",
+            "writeOnly": true
+          }
+        }
+      },
+      "PasswordlessCompleteRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "continuation",
+          "code_verifier",
+          "decision"
+        ],
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "Required for public clients; must identify the original approved client."
+          },
+          "continuation": {
+            "type": "string",
+            "description": "Opaque handle returned by custom_completion_required."
+          },
+          "code_verifier": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9._~-]{43,128}$",
+            "writeOnly": true
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "deny"
+            ]
+          },
+          "identifier": {
+            "type": "string",
+            "description": "Required when registration is outstanding; must match the verified identifier."
+          },
+          "profile": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "display_name": {
+                "type": "string"
+              }
+            }
+          },
+          "consent": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Required on registration approval; send the exact versions returned in requirements after the user accepts them.",
+            "required": [
+              "aether_terms_version",
+              "aether_privacy_version"
+            ],
+            "properties": {
+              "aether_terms_version": {
+                "type": "string"
+              },
+              "aether_privacy_version": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "PasswordlessVerifyResponse": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "code",
+              "state"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "authorized"
+              },
+              "code": {
+                "type": "string",
+                "description": "Single-use OAuth authorization code; exchange with the original redirect URI and PKCE verifier."
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "continuation_url",
+              "expires_in"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "hosted_completion_required"
+              },
+              "continuation_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Short-lived one-use Aether browser handoff. Open in a browser; do not call it as an SDK JSON operation or log the URL. Does not create a general SSO session."
+              },
+              "expires_in": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "continuation",
+              "expires_in",
+              "requirements"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "custom_completion_required"
+              },
+              "continuation": {
+                "type": "string"
+              },
+              "expires_in": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300
+              },
+              "requirements": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "registration",
+                  "consent",
+                  "scopes",
+                  "aether_terms_version",
+                  "aether_privacy_version"
+                ],
+                "properties": {
+                  "registration": {
+                    "type": "boolean"
+                  },
+                  "consent": {
+                    "type": "boolean"
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "aether_terms_version": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "aether_privacy_version": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "status"
+        }
+      },
+      "PasswordlessCompleteResponse": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "code",
+              "state"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "authorized"
+              },
+              "code": {
+                "type": "string",
+                "description": "Single-use OAuth authorization code; exchange with the original redirect URI and PKCE verifier."
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "error",
+              "state"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "denied"
+              },
+              "error": {
+                "type": "string",
+                "const": "access_denied"
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "status"
+        }
+      },
+      "PasswordlessAuthorized": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "code",
+          "state"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "authorized"
+          },
+          "code": {
+            "type": "string",
+            "description": "Single-use OAuth authorization code; exchange with the original redirect URI and PKCE verifier."
+          },
+          "state": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "PasswordlessHostedCompletionRequired": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "continuation_url",
+          "expires_in"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "hosted_completion_required"
+          },
+          "continuation_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Short-lived one-use Aether browser handoff. Open in a browser; do not call it as an SDK JSON operation or log the URL. Does not create a general SSO session."
+          },
+          "expires_in": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 300
+          }
+        }
+      },
+      "PasswordlessCustomCompletionRequired": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "continuation",
+          "expires_in",
+          "requirements"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "custom_completion_required"
+          },
+          "continuation": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 300
+          },
+          "requirements": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "registration",
+              "consent",
+              "scopes",
+              "aether_terms_version",
+              "aether_privacy_version"
+            ],
+            "properties": {
+              "registration": {
+                "type": "boolean"
+              },
+              "consent": {
+                "type": "boolean"
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "aether_terms_version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "aether_privacy_version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "PasswordlessCompletionRequirements": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "registration",
+          "consent",
+          "scopes",
+          "aether_terms_version",
+          "aether_privacy_version"
+        ],
+        "properties": {
+          "registration": {
+            "type": "boolean"
+          },
+          "consent": {
+            "type": "boolean"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "aether_terms_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "aether_privacy_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "PasswordlessDenied": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "error",
+          "state"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "denied"
+          },
+          "error": {
+            "type": "string",
+            "const": "access_denied"
+          },
+          "state": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "PasswordlessError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "INVALID_REQUEST",
+                  "INVALID_PASSWORDLESS_REQUEST",
+                  "INVALID_CLIENT",
+                  "ORIGIN_NOT_ALLOWED",
+                  "CUSTOM_COMPLETION_NOT_ALLOWED",
+                  "RATE_LIMITED",
+                  "TEMPORARILY_UNAVAILABLE",
+                  "IDENTITY_ROLE_UNAVAILABLE"
+                ]
+              }
+            }
+          }
+        }
+      },
       "TokenRequest": {
         "type": "object",
         "additionalProperties": false,
@@ -4174,6 +6323,15 @@
               "refresh_token",
               "client_credentials"
             ]
+          },
+          "client_id": {
+            "type": "string",
+            "description": "Required for public clients and client_secret_post authentication."
+          },
+          "client_secret": {
+            "type": "string",
+            "writeOnly": true,
+            "description": "Confidential server clients only; never embed in browsers or mobile apps."
           },
           "code": {
             "type": "string"
@@ -4235,6 +6393,15 @@
           "token"
         ],
         "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "Required for public-client revocation or client_secret_post authentication."
+          },
+          "client_secret": {
+            "type": "string",
+            "writeOnly": true,
+            "description": "Confidential server clients only."
+          },
           "token": {
             "type": "string"
           },
@@ -4354,6 +6521,17 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "token_endpoint_auth_methods_supported": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "client_secret_basic",
+                "client_secret_post",
+                "none"
+              ]
             }
           },
           "id_token_signing_alg_values_supported": {

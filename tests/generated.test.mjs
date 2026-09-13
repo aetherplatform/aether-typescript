@@ -8,7 +8,7 @@ import {operations as storage} from "../packages/storage/dist/generated.js";
 import {operations as webhooks} from "../packages/webhooks/dist/generated.js";
 
 test("generated clients expose exactly the approved public operations", () => {
-  assert.equal(Object.keys(identity).length, 8);
+  assert.equal(Object.keys(identity).length, 11);
   assert.equal(Object.keys(events).length, 3);
   assert.equal(Object.keys(notifications).length, 29);
   assert.equal(Object.keys(storage).length, 18);

@@ -83,6 +83,9 @@
           "content": {
             "application/json": {
               "schema": {
+                "example": {
+                  "name": "integration-tests"
+                },
                 "type": "object",
                 "additionalProperties": false,
                 "required": [
@@ -158,6 +161,7 @@
                   "properties": {
                     "id": {
                       "type": "string",
+                      "example": "ns_00000000000000000000000000000001",
                       "pattern": "^ns_[0-9a-f]{32}$"
                     },
                     "organization_id": {
@@ -982,6 +986,7 @@
                     "properties": {
                       "id": {
                         "type": "string",
+                        "example": "ns_00000000000000000000000000000001",
                         "pattern": "^ns_[0-9a-f]{32}$"
                       },
                       "organization_id": {
@@ -1616,6 +1621,7 @@
             "required": true,
             "schema": {
               "type": "string",
+              "example": "ns_00000000000000000000000000000001",
               "pattern": "^ns_[0-9a-f]{32}$"
             }
           },
@@ -1660,6 +1666,7 @@
                   "properties": {
                     "id": {
                       "type": "string",
+                      "example": "ns_00000000000000000000000000000001",
                       "pattern": "^ns_[0-9a-f]{32}$"
                     },
                     "organization_id": {
@@ -2390,6 +2397,7 @@
             "required": true,
             "schema": {
               "type": "string",
+              "example": "ns_00000000000000000000000000000001",
               "pattern": "^ns_[0-9a-f]{32}$"
             }
           }
@@ -2420,6 +2428,7 @@
                   "properties": {
                     "namespace_id": {
                       "type": "string",
+                      "example": "ns_00000000000000000000000000000001",
                       "pattern": "^ns_[0-9a-f]{32}$"
                     },
                     "organization_id": {
@@ -3228,6 +3237,11 @@
           "content": {
             "application/json": {
               "schema": {
+                "example": {
+                  "namespace_id": "ns_00000000000000000000000000000001",
+                  "entity_type": "document",
+                  "entity_id": "example-document"
+                },
                 "type": "object",
                 "additionalProperties": false,
                 "required": [
@@ -3236,6 +3250,7 @@
                 "properties": {
                   "namespace_id": {
                     "type": "string",
+                    "example": "ns_00000000000000000000000000000001",
                     "pattern": "^ns_[0-9a-f]{32}$"
                   },
                   "entity_type": {
@@ -3286,6 +3301,7 @@
                     },
                     "namespace_id": {
                       "type": "string",
+                      "example": "ns_00000000000000000000000000000001",
                       "pattern": "^ns_[0-9a-f]{32}$"
                     },
                     "organization_id": {
@@ -4177,6 +4193,7 @@
                     },
                     "namespace_id": {
                       "type": "string",
+                      "example": "ns_00000000000000000000000000000001",
                       "pattern": "^ns_[0-9a-f]{32}$"
                     },
                     "organization_id": {
@@ -5785,6 +5802,7 @@
                       },
                       "namespace_id": {
                         "type": "string",
+                        "example": "ns_00000000000000000000000000000001",
                         "pattern": "^ns_[0-9a-f]{32}$"
                       },
                       "organization_id": {
@@ -6555,6 +6573,14 @@
           "content": {
             "application/json": {
               "schema": {
+                "example": {
+                  "namespace_id": "ns_00000000000000000000000000000001",
+                  "logical_key": "examples/hello.txt",
+                  "filename": "hello.txt",
+                  "content_type": "text/plain",
+                  "expected_size": 5,
+                  "visibility": "private"
+                },
                 "type": "object",
                 "additionalProperties": false,
                 "required": [
@@ -6567,6 +6593,7 @@
                 "properties": {
                   "namespace_id": {
                     "type": "string",
+                    "example": "ns_00000000000000000000000000000001",
                     "pattern": "^ns_[0-9a-f]{32}$"
                   },
                   "asset_id": {
@@ -7568,6 +7595,14 @@
           "content": {
             "application/json": {
               "schema": {
+                "example": {
+                  "parts": [
+                    {
+                      "part_number": 1,
+                      "etag": "provider-etag-for-part-1"
+                    }
+                  ]
+                },
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
@@ -7655,6 +7690,7 @@
                     },
                     "namespace_id": {
                       "type": "string",
+                      "example": "ns_00000000000000000000000000000001",
                       "pattern": "^ns_[0-9a-f]{32}$"
                     },
                     "organization_id": {
@@ -8590,6 +8626,10 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "example": {
+                    "upload_id": "upl_00000000000000000000000000000001",
+                    "status": "aborted"
+                  },
                   "type": "object",
                   "additionalProperties": false,
                   "required": [
@@ -9468,6 +9508,7 @@
                     },
                     "namespace_id": {
                       "type": "string",
+                      "example": "ns_00000000000000000000000000000001",
                       "pattern": "^ns_[0-9a-f]{32}$"
                     },
                     "organization_id": {
@@ -10287,6 +10328,7 @@
                     },
                     "namespace_id": {
                       "type": "string",
+                      "example": "ns_00000000000000000000000000000001",
                       "pattern": "^ns_[0-9a-f]{32}$"
                     },
                     "organization_id": {
@@ -11264,6 +11306,7 @@
                     },
                     "namespace_id": {
                       "type": "string",
+                      "example": "ns_00000000000000000000000000000001",
                       "pattern": "^ns_[0-9a-f]{32}$"
                     },
                     "organization_id": {
@@ -12188,6 +12231,12 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "example": {
+                    "object_id": "obj_00000000000000000000000000000001",
+                    "download_url": "https://storage.example.com/signed-download",
+                    "delivery": "signed_provider",
+                    "expires_at": "2026-09-12T15:00:00Z"
+                  },
                   "type": "object",
                   "additionalProperties": false,
                   "required": [
@@ -12976,6 +13025,12 @@
                 "schema": {
                   "allOf": [
                     {
+                      "example": {
+                        "object_id": "obj_00000000000000000000000000000001",
+                        "download_url": "https://storage.example.com/signed-download",
+                        "delivery": "signed_provider",
+                        "expires_at": "2026-09-12T15:00:00Z"
+                      },
                       "type": "object",
                       "additionalProperties": false,
                       "required": [
@@ -13853,6 +13908,7 @@
             "required": true,
             "schema": {
               "type": "string",
+              "example": "ns_00000000000000000000000000000001",
               "pattern": "^ns_[0-9a-f]{32}$"
             }
           },
@@ -14014,6 +14070,7 @@
                           },
                           "namespace_id": {
                             "type": "string",
+                            "example": "ns_00000000000000000000000000000001",
                             "pattern": "^ns_[0-9a-f]{32}$"
                           },
                           "organization_id": {
@@ -14865,6 +14922,7 @@
             "required": true,
             "schema": {
               "type": "string",
+              "example": "ns_00000000000000000000000000000001",
               "pattern": "^ns_[0-9a-f]{32}$"
             }
           },
@@ -14937,6 +14995,7 @@
                     },
                     "namespace_id": {
                       "type": "string",
+                      "example": "ns_00000000000000000000000000000001",
                       "pattern": "^ns_[0-9a-f]{32}$"
                     },
                     "organization_id": {
@@ -15749,6 +15808,7 @@
         "required": true,
         "schema": {
           "type": "string",
+          "example": "ns_00000000000000000000000000000001",
           "pattern": "^ns_[0-9a-f]{32}$"
         }
       },
@@ -15783,6 +15843,7 @@
     "schemas": {
       "NamespaceId": {
         "type": "string",
+        "example": "ns_00000000000000000000000000000001",
         "pattern": "^ns_[0-9a-f]{32}$"
       },
       "AssetId": {
@@ -15892,6 +15953,9 @@
         }
       },
       "CreateNamespaceRequest": {
+        "example": {
+          "name": "integration-tests"
+        },
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -15959,6 +16023,7 @@
         "properties": {
           "id": {
             "type": "string",
+            "example": "ns_00000000000000000000000000000001",
             "pattern": "^ns_[0-9a-f]{32}$"
           },
           "organization_id": {
@@ -16056,6 +16121,7 @@
         "properties": {
           "namespace_id": {
             "type": "string",
+            "example": "ns_00000000000000000000000000000001",
             "pattern": "^ns_[0-9a-f]{32}$"
           },
           "organization_id": {
@@ -16122,6 +16188,11 @@
         }
       },
       "CreateAssetRequest": {
+        "example": {
+          "namespace_id": "ns_00000000000000000000000000000001",
+          "entity_type": "document",
+          "entity_id": "example-document"
+        },
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -16130,6 +16201,7 @@
         "properties": {
           "namespace_id": {
             "type": "string",
+            "example": "ns_00000000000000000000000000000001",
             "pattern": "^ns_[0-9a-f]{32}$"
           },
           "entity_type": {
@@ -16172,6 +16244,7 @@
           },
           "namespace_id": {
             "type": "string",
+            "example": "ns_00000000000000000000000000000001",
             "pattern": "^ns_[0-9a-f]{32}$"
           },
           "organization_id": {
@@ -16245,6 +16318,14 @@
         }
       },
       "CreateUploadIntentRequest": {
+        "example": {
+          "namespace_id": "ns_00000000000000000000000000000001",
+          "logical_key": "examples/hello.txt",
+          "filename": "hello.txt",
+          "content_type": "text/plain",
+          "expected_size": 5,
+          "visibility": "private"
+        },
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -16257,6 +16338,7 @@
         "properties": {
           "namespace_id": {
             "type": "string",
+            "example": "ns_00000000000000000000000000000001",
             "pattern": "^ns_[0-9a-f]{32}$"
           },
           "asset_id": {
@@ -16479,6 +16561,14 @@
         }
       },
       "CompleteUploadRequest": {
+        "example": {
+          "parts": [
+            {
+              "part_number": 1,
+              "etag": "provider-etag-for-part-1"
+            }
+          ]
+        },
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -16534,6 +16624,10 @@
         }
       },
       "AbortUploadResult": {
+        "example": {
+          "upload_id": "upl_00000000000000000000000000000001",
+          "status": "aborted"
+        },
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -16593,6 +16687,7 @@
           },
           "namespace_id": {
             "type": "string",
+            "example": "ns_00000000000000000000000000000001",
             "pattern": "^ns_[0-9a-f]{32}$"
           },
           "organization_id": {
@@ -16698,6 +16793,12 @@
         }
       },
       "DownloadIntent": {
+        "example": {
+          "object_id": "obj_00000000000000000000000000000001",
+          "download_url": "https://storage.example.com/signed-download",
+          "delivery": "signed_provider",
+          "expires_at": "2026-09-12T15:00:00Z"
+        },
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -16734,6 +16835,12 @@
       "KeyedDownloadIntent": {
         "allOf": [
           {
+            "example": {
+              "object_id": "obj_00000000000000000000000000000001",
+              "download_url": "https://storage.example.com/signed-download",
+              "delivery": "signed_provider",
+              "expires_at": "2026-09-12T15:00:00Z"
+            },
             "type": "object",
             "additionalProperties": false,
             "required": [
@@ -16854,6 +16961,7 @@
                 },
                 "namespace_id": {
                   "type": "string",
+                  "example": "ns_00000000000000000000000000000001",
                   "pattern": "^ns_[0-9a-f]{32}$"
                 },
                 "organization_id": {

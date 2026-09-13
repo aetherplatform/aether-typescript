@@ -1,7 +1,13 @@
 import {AetherError} from "@aetherplatform/core";
 import {ClientCredentialsTokenProvider} from "@aetherplatform/core/server";
 
-import type {IntrospectionResponse, TokenHandleRequest, TokenRequest, TokenResponse} from "./generated.js";
+import type {
+  IntrospectionResponse, TokenHandleRequest, TokenRequest, TokenResponse,
+  PasswordlessStartRequest, PasswordlessStartResponse,
+  PasswordlessVerifyRequest, PasswordlessVerifyResponse,
+  PasswordlessCompleteRequest, PasswordlessCompleteResponse,
+} from "./generated.js";
+import {passwordlessRequest, resolveClientId} from "./passwordless.js";
 import {
   IdentityTransport,
   type IdentityRequestOptions,
@@ -42,7 +48,8 @@ export class ConfidentialIdentityClient {
       [...sensitiveValues, this.#clientSecret],
       options,
     );
-    if (!response?.access_token || response.token_type.toLowerCase() !== "bearer" || response.expires_in <= 0) {
+    if (typeof response?.access_token !== "string" || !response.access_token || typeof response.token_type !== "string"
+      || response.token_type.toLowerCase() !== "bearer" || !Number.isFinite(response.expires_in) || response.expires_in <= 0) {
       throw new AetherError({
         status: 0,
         code: "invalid_token_response",
@@ -50,6 +57,22 @@ export class ConfidentialIdentityClient {
       });
     }
     return response;
+  }
+
+  startPasswordless(request: PasswordlessStartRequest, options: IdentityRequestOptions = {}): Promise<PasswordlessStartResponse> {
+    return passwordlessRequest(this.#transport, "startPasswordless", request, resolveClientId(this.#clientId, request.client_id), options, this.#authorization());
+  }
+
+  verifyPasswordless(request: PasswordlessVerifyRequest, options: IdentityRequestOptions = {}): Promise<PasswordlessVerifyResponse> {
+    return passwordlessRequest(this.#transport, "verifyPasswordless", request, resolveClientId(this.#clientId, request.client_id), options, this.#authorization());
+  }
+
+  completePasswordless(request: PasswordlessCompleteRequest, options: IdentityRequestOptions = {}): Promise<PasswordlessCompleteResponse> {
+    return passwordlessRequest(this.#transport, "completePasswordless", request, resolveClientId(this.#clientId, request.client_id), options, this.#authorization());
+  }
+
+  #authorization(): HeadersInit {
+    return {authorization: `Basic ${Buffer.from(`${this.#clientId}:${this.#clientSecret}`).toString("base64")}`};
   }
 
   async revokeOAuthToken(request: TokenHandleRequest, options: IdentityRequestOptions = {}): Promise<void> {
@@ -84,12 +107,11 @@ export class ConfidentialIdentityClient {
     redact: readonly string[],
     options: IdentityRequestOptions,
   ): Promise<ResponseBody> {
-    const credentials = Buffer.from(`${this.#clientId}:${this.#clientSecret}`).toString("base64");
     return this.#transport.request<ResponseBody>({
       operation,
       method: "POST",
       path,
-      headers: {authorization: `Basic ${credentials}`},
+      headers: this.#authorization(),
       body,
       successStatuses: [200],
       retrySafe: false,

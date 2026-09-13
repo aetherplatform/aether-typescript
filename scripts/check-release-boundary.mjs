@@ -52,10 +52,10 @@ for (const shortName of packageNames.filter((name) => name !== "core")) {
 
 const identityRoot = await readText("packages/identity/src/index.ts");
 const identityServer = await readText("packages/identity/src/server.ts");
-for (const symbol of ["IdentityClient", "authorizationUrl", "getOpenIdConfiguration", "getOAuthJwks", "listOAuthScopes", "getUserInfo"]) {
+for (const symbol of ["IdentityClient", "authorizationUrl", "getOpenIdConfiguration", "getOAuthJwks", "listOAuthScopes", "getUserInfo", "startPasswordless", "verifyPasswordless", "completePasswordless", "exchangeOAuthToken", "revokeOAuthToken", "generatePkce", "validateOAuthCallback"]) {
   if (!identityRoot.includes(symbol)) throw new Error(`Identity root is missing ${symbol}`);
 }
-for (const symbol of ["ConfidentialIdentityClient", "exchangeOAuthToken", "revokeOAuthToken", "introspectOAuthToken"]) {
+for (const symbol of ["ConfidentialIdentityClient", "exchangeOAuthToken", "revokeOAuthToken", "introspectOAuthToken", "startPasswordless", "verifyPasswordless", "completePasswordless"]) {
   if (!identityServer.includes(symbol)) throw new Error(`Identity server entry is missing ${symbol}`);
 }
 if (/\/oauth\/login|\/oauth\/consent|\/internal\/v1\//.test(`${identityRoot}\n${identityServer}`)) {
@@ -69,7 +69,7 @@ const generated = {
   storage: await readText("packages/storage/src/generated.ts"),
   webhooks: await readText("packages/webhooks/src/generated.ts"),
 };
-for (const [name, expected] of Object.entries({identity: 8, events: 3, notifications: 29, storage: 18, webhooks: 19})) {
+for (const [name, expected] of Object.entries({identity: 11, events: 3, notifications: 29, storage: 18, webhooks: 19})) {
   const match = generated[name].match(/export interface \w+Operations \{([\s\S]*?)\n\}/);
   const count = match ? [...match[1].matchAll(/^  [A-Za-z_$][A-Za-z0-9_$]*: \{/gm)].length : 0;
   if (count !== expected) throw new Error(`${name} must expose exactly ${expected} public operations, found ${count}`);

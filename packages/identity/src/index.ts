@@ -1,6 +1,12 @@
 import {AetherError, type TokenProvider} from "@aetherplatform/core";
 
-import type {Jwks, OpenIdConfiguration, UserInfo} from "./generated.js";
+import type {
+  Jwks, OpenIdConfiguration, UserInfo, TokenResponse,
+  PasswordlessStartRequest, PasswordlessStartResponse,
+  PasswordlessVerifyRequest, PasswordlessVerifyResponse,
+  PasswordlessCompleteRequest, PasswordlessCompleteResponse,
+} from "./generated.js";
+import {passwordlessRequest, resolveClientId, clientPath, validateCodeVerifier} from "./passwordless.js";
 import {
   IdentityTransport,
   type IdentityRequestOptions,
@@ -9,11 +15,25 @@ import {
 } from "./internal.js";
 
 export * from "./generated.js";
+export {generatePkce, validateOAuthCallback, type PkcePair, type OAuthCallbackResult} from "./pkce.js";
 export type {IdentityRequestOptions, IdentityRetryEvent};
 
 const codeChallengePattern = /^[A-Za-z0-9_-]{43,128}$/;
 
-export interface IdentityClientConfig extends IdentityTransportConfig {}
+export interface IdentityClientConfig extends IdentityTransportConfig {
+  clientId?: string;
+}
+
+export type PublicTokenRequest = {client_id?: string} & (
+  | {grant_type: "authorization_code"; code: string; redirect_uri: string; code_verifier: string}
+  | {grant_type: "refresh_token"; refresh_token: string}
+);
+
+export interface PublicTokenHandleRequest {
+  client_id?: string;
+  token: string;
+  token_type_hint?: string;
+}
 
 export interface AuthorizationRequest {
   clientId: string;
@@ -30,9 +50,60 @@ export interface ScopeCatalog {
 
 export class IdentityClient {
   readonly #transport: IdentityTransport;
+  readonly #clientId: string | undefined;
 
   constructor(config: IdentityClientConfig) {
     this.#transport = new IdentityTransport(config);
+    this.#clientId = config.clientId;
+  }
+
+  startPasswordless(request: PasswordlessStartRequest, options: IdentityRequestOptions = {}): Promise<PasswordlessStartResponse> {
+    return passwordlessRequest(this.#transport, "startPasswordless", request, resolveClientId(this.#clientId, request.client_id), options);
+  }
+
+  verifyPasswordless(request: PasswordlessVerifyRequest, options: IdentityRequestOptions = {}): Promise<PasswordlessVerifyResponse> {
+    return passwordlessRequest(this.#transport, "verifyPasswordless", request, resolveClientId(this.#clientId, request.client_id), options);
+  }
+
+  completePasswordless(request: PasswordlessCompleteRequest, options: IdentityRequestOptions = {}): Promise<PasswordlessCompleteResponse> {
+    return passwordlessRequest(this.#transport, "completePasswordless", request, resolveClientId(this.#clientId, request.client_id), options);
+  }
+
+  async exchangeOAuthToken(request: PublicTokenRequest, options: IdentityRequestOptions = {}): Promise<TokenResponse> {
+    const id = resolveClientId(this.#clientId, request.client_id);
+    const form = new URLSearchParams({client_id: id, grant_type: request.grant_type});
+    if (request.grant_type === "authorization_code") {
+      if (!request.code || !request.redirect_uri) throw new TypeError("code and redirect_uri are required");
+      validateCodeVerifier(request.code_verifier);
+      form.set("code", request.code);
+      form.set("redirect_uri", request.redirect_uri);
+      form.set("code_verifier", request.code_verifier);
+    } else if (request.grant_type === "refresh_token") {
+      if (!request.refresh_token) throw new TypeError("refresh_token is required");
+      form.set("refresh_token", request.refresh_token);
+    } else {
+      throw new TypeError("Public clients may only exchange authorization codes or refresh tokens");
+    }
+    const response = await this.#transport.request<TokenResponse>({
+      operation: "exchangeOAuthToken", method: "POST", path: clientPath("/oauth/token", id),
+      body: form, successStatuses: [200], retrySafe: false, omitErrorDetails: true,
+    }, options);
+    if (typeof response?.access_token !== "string" || !response.access_token || typeof response.token_type !== "string"
+      || response.token_type.toLowerCase() !== "bearer" || !Number.isFinite(response.expires_in) || response.expires_in <= 0) {
+      throw invalidIdentityResponse("OAuth token");
+    }
+    return response;
+  }
+
+  async revokeOAuthToken(request: PublicTokenHandleRequest, options: IdentityRequestOptions = {}): Promise<void> {
+    const id = resolveClientId(this.#clientId, request.client_id);
+    if (!request.token) throw new TypeError("token is required");
+    const form = new URLSearchParams({client_id: id, token: request.token});
+    if (request.token_type_hint) form.set("token_type_hint", request.token_type_hint);
+    await this.#transport.request<void>({
+      operation: "revokeOAuthToken", method: "POST", path: clientPath("/oauth/revoke", id),
+      body: form, successStatuses: [200], retrySafe: false, omitErrorDetails: true,
+    }, options);
   }
 
   authorizationUrl(request: AuthorizationRequest): string {
@@ -121,10 +192,11 @@ export class IdentityClient {
         const response = await this.#transport.request<UserInfo>({
           operation: "getUserInfo",
           method: "GET",
-          path: "/oauth/userinfo",
+          path: this.#clientId ? clientPath("/oauth/userinfo", this.#clientId) : "/oauth/userinfo",
           headers: {authorization: `Bearer ${token.accessToken}`},
           successStatuses: [200],
           retrySafe: true,
+          omitErrorDetails: true,
         }, options);
         if (!response?.sub) throw invalidIdentityResponse("userinfo");
         return response;
