@@ -17,6 +17,12 @@ Public contacts:
 - SDK support: `support@useaether.co`
 - Hosted sandbox: `api-sandbox.useaether.co`
 
+Sandbox service names use a flat `<service>-sandbox.useaether.co` convention.
+This keeps them inside Cloudflare Universal SSL's one-label wildcard coverage;
+the previously proposed `sandbox.<service>.useaether.co` form requires a paid
+multi-level certificate. Production retains the shorter
+`<service>.useaether.co` names.
+
 ## Public Package Boundary
 
 The public TypeScript SDK uses the `@aetherplatform` npm scope and lives in the
@@ -31,16 +37,18 @@ The first public release contains:
 - `@aetherplatform/storage`
 - `@aetherplatform/webhooks`
 
-All six packages remain unpublished until their customer contracts and hosted
-sandbox checks pass together. A package being marked publishable in source is
-not evidence that its backing hosted API is currently available.
+All six packages are published at `0.1.0-beta.1.1` as of 2026-09-12. Every new
+release requires their customer contracts and hosted sandbox checks to pass
+together. Package publication is not evidence that its backing hosted API is
+currently available.
 
 The SDK and approved public specifications use Apache License 2.0. Aether
 backend services, deployment code, migrations, signing material, internal NATS
 contracts, and operational evidence remain private and are not covered by the
 SDK license.
 
-The initial SDK is ESM-only and supports Node.js 20 and 22. Browser-safe APIs
+The initial SDK is ESM-only, requires Node.js 20 or newer, and is continuously
+tested on Node.js 20, 22, and 24. Browser-safe APIs
 use package root exports. Client-secret and Node.js-only cryptographic helpers
 use explicit `/server` exports.
 
@@ -149,7 +157,7 @@ are outputs of that process, not where the changelog is authored.
    request containing synchronized versions and changelogs for all six
    packages.
 3. A maintainer reviews and merges that release pull request.
-4. CI reruns Node 20/22, source-free package, local sandbox, and hosted sandbox
+4. CI reruns Node 20/22/24, source-free package, local sandbox, and hosted sandbox
    gates.
 5. GitHub Actions uses npm trusted publishing to publish immutable packages
    with provenance. Prereleases use `next`; non-prereleases use `latest`.
@@ -167,7 +175,7 @@ existing version is never republished.
 Every public npm release requires:
 
 1. Generated contracts are current and contain only approved public routes.
-2. Node.js 20 and 22 unit, package, and local sandbox suites pass.
+2. Node.js 20, 22, and 24 unit, package, and local sandbox suites pass.
 3. The source-free consumer installs the exact package tarballs.
 4. Browser-safe roots contain no Node.js or client-secret implementation.
 5. The hosted sandbox proves Identity discovery and JWKS, Events catalog reads,
@@ -181,11 +189,11 @@ Every public npm release requires:
 9. The release is published under the correct dist-tag and verified from a
    clean external consumer after publication.
 
-The release workflow remains skipped until the repository variable
-`AETHER_SDK_RELEASE_ENABLED` is explicitly set to `true`. This switch is set
-only after the hosted sandbox variables/secrets and npm trusted publisher are
-configured, preventing an incomplete repository bootstrap from appearing as a
-failed or partially attempted release.
+The release workflow runs only when the repository variable
+`AETHER_SDK_RELEASE_ENABLED` is explicitly set to `true`; it is enabled after
+the completed bootstrap. A newly configured repository must keep this switch
+disabled until its hosted sandbox variables/secrets and npm trusted publishers
+are configured. Enabling the switch does not bypass per-release proof.
 
 The protected `sdk-sandbox` environment supplies:
 
@@ -207,9 +215,13 @@ AETHER_SDK_SANDBOX_CLIENT_SECRET
 
 URLs and audiences are non-secret environment variables. The client ID and
 client secret are environment secrets. The sandbox client receives only the
-capabilities exercised by the proof.
+capabilities exercised by the proof plus `storage:namespaces/*:manage` for the
+one-time disposable namespace bootstrap.
 
 ### One-Time npm Package Bootstrap
+
+This procedure was completed for all six packages on 2026-09-12. It records the
+initial setup; routine releases use the permanent OIDC workflow.
 
 npm exposes trusted-publisher settings only after a package exists. The initial
 creation of all six `@aetherplatform` packages therefore uses
@@ -245,14 +257,20 @@ not retained as a rollback credential.
   must explain the required customer action without disclosing exploitable
   detail prematurely.
 
-## Remaining Publication Inputs
+## Current Publication Evidence
 
-The package strategy is locked, but publication still requires:
+The protected [release verification](https://github.com/aetherplatform/aether-typescript/actions/runs/34667810322) passed for the current preview. All six packages use trusted publishing; the temporary bootstrap token has been removed.
 
-- ownership confirmation for the `aetherplatform` npm organization, one-time
-  package bootstrap, and trusted-publishing configuration;
-- creation of the `security@useaether.co` and `support@useaether.co` forwarding
-  addresses;
-- one configured hosted sandbox client and namespace;
-- configured Identity, Events, Notifications, Storage, and Webhooks sandbox
-  endpoints and platform audiences.
+The original six `0.1.0-beta.1` versions were published on 2026-09-12. The
+corrected release is `0.1.0-beta.1.1`, retaining the maintainer-requested beta.1
+series. npm rejected removal of its initial `latest` tag; the maintainer
+approved keeping both `next` and `latest` on the fixed preview while no stable
+release exists. A later stable version must be protected from beta tag moves.
+Registry tags are read back after publication, allowing a bounded propagation
+wait before failing the release.
+
+The maintainer reports the support/security aliases configured and Cloudflare
+MX records were verified. Inbox delivery was not independently tested by the
+agent. SDK publication does not provision the API service, complete platform
+staging gates, or certify production readiness; the Mac sandbox retains its
+session-dependent availability.

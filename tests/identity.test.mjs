@@ -151,7 +151,7 @@ test("confidential Identity calls use Basic auth, form encoding, and no automati
     rejected.exchangeOAuthToken({grant_type: "client_credentials", audience: "aether-events", scope: "events:catalog/*:read"}),
     (error) => {
       assert(error instanceof AetherError);
-      assert.equal(error.message, "[REDACTED] rejected");
+      assert.equal(error.message, "Identity request failed with HTTP 401");
       assert.equal(error.details, undefined);
       return true;
     },

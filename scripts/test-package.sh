@@ -73,6 +73,14 @@ if ("ConfidentialIdentityClient" in identity || "ClientCredentialsTokenProvider"
 if (typeof identity.IdentityClient !== "function" || typeof events.EventsClient !== "function") {
   throw new Error("browser-safe Identity or Events export is unavailable");
 }
+if (typeof identity.generatePkce !== "function" || typeof identity.validateOAuthCallback !== "function") {
+  throw new Error("browser-safe Identity proof helpers are unavailable");
+}
+const publicIdentity = new identity.IdentityClient({baseUrl: "https://auth.example", clientId: "public-client"});
+if (typeof publicIdentity.startPasswordless !== "function" || typeof publicIdentity.verifyPasswordless !== "function" || typeof publicIdentity.completePasswordless !== "function") {
+  throw new Error("public passwordless methods are unavailable");
+}
+if ("introspectOAuthToken" in publicIdentity) throw new Error("public Identity exposes introspection");
 if (typeof notifications.NotificationsClient !== "function" || typeof webhooks.WebhooksClient !== "function") {
   throw new Error("browser-safe Notifications or Webhooks export is unavailable");
 }
@@ -88,13 +96,27 @@ node browser-safe.mjs
 
 cat > browser-safe.ts <<'EOF'
 import {AetherError} from "@aetherplatform/core";
-import {IdentityClient} from "@aetherplatform/identity";
+import {IdentityClient, generatePkce, validateOAuthCallback, type PasswordlessVerifyResponse} from "@aetherplatform/identity";
 import {EventsClient} from "@aetherplatform/events";
 import {NotificationsClient} from "@aetherplatform/notifications";
 import {StorageClient} from "@aetherplatform/storage";
 import {WebhooksClient} from "@aetherplatform/webhooks";
 
-export const browserSurface = {AetherError, IdentityClient, EventsClient, NotificationsClient, StorageClient, WebhooksClient};
+export const browserSurface = {AetherError, IdentityClient, generatePkce, validateOAuthCallback, EventsClient, NotificationsClient, StorageClient, WebhooksClient};
+const identity = new IdentityClient({baseUrl: "https://auth.example", clientId: "public-client"});
+void identity.exchangeOAuthToken({grant_type: "refresh_token", refresh_token: "presented-token"});
+// @ts-expect-error Public clients cannot use machine credentials.
+void identity.exchangeOAuthToken({grant_type: "client_credentials", audience: "aether-events", scope: "read"});
+// @ts-expect-error Public clients cannot introspect tokens.
+void identity.introspectOAuthToken({token: "presented-token"});
+export function outcome(response: PasswordlessVerifyResponse): string {
+  switch (response.status) {
+    case "authorized": return response.code;
+    case "hosted_completion_required": return response.continuation_url;
+    case "custom_completion_required": return response.continuation;
+    default: { const exhaustive: never = response; return exhaustive; }
+  }
+}
 EOF
 
 "${SDK_ROOT}/node_modules/.bin/tsc" \
@@ -110,6 +132,8 @@ for browser_root in \
   node_modules/@aetherplatform/core/dist/index.js \
   node_modules/@aetherplatform/identity/dist/index.js \
   node_modules/@aetherplatform/identity/dist/internal.js \
+  node_modules/@aetherplatform/identity/dist/passwordless.js \
+  node_modules/@aetherplatform/identity/dist/pkce.js \
   node_modules/@aetherplatform/events/dist/index.js \
   node_modules/@aetherplatform/notifications/dist/index.js \
   node_modules/@aetherplatform/storage/dist/index.js \

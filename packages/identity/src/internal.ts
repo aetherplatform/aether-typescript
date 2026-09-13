@@ -32,7 +32,8 @@ interface ProtocolRequest {
   successStatuses: readonly number[];
   retrySafe: boolean;
   headers?: HeadersInit;
-  body?: URLSearchParams;
+  body?: URLSearchParams | string;
+  contentType?: string;
   redact?: readonly string[];
   omitErrorDetails?: boolean;
 }
@@ -76,14 +77,8 @@ export class IdentityTransport {
 
       try {
         const {response, payload} = await this.#send(request, options, requestId);
-
-        if (request.successStatuses.includes(response.status)) {
-          return payload as ResponseBody;
-        }
-
-        const error = errorFromResponse(response, payload, request.redact, request.omitErrorDetails);
-        if (!request.retrySafe || attempt > this.#maxRetries || !retryable(error)) throw error;
-        await this.#backoff(request.operation, attempt, error, options.signal);
+        if (request.successStatuses.includes(response.status)) return payload as ResponseBody;
+        throw errorFromResponse(response, payload, request.redact, request.omitErrorDetails);
       } catch (error) {
         if (error instanceof AetherError) {
           if (!request.retrySafe || attempt > this.#maxRetries || !retryable(error)) throw error;
@@ -114,18 +109,19 @@ export class IdentityTransport {
       headers.set("user-agent", this.#userAgent);
       headers.set("x-request-id", requestId);
       if (options.correlationId) headers.set("x-correlation-id", options.correlationId);
-      if (request.body) headers.set("content-type", "application/x-www-form-urlencoded");
+      if (request.body) headers.set("content-type", request.contentType ?? "application/x-www-form-urlencoded");
 
+      let response: Response;
       try {
-        const response = await this.#fetch(this.resolve(request.path), {
+        response = await this.#fetch(this.resolve(request.path), {
           method: request.method,
           headers,
           ...(request.body ? {body: request.body} : {}),
           signal: controller.signal,
+          redirect: "error",
+          credentials: "omit",
         });
-        return {response, payload: await readJson(response)};
       } catch (error) {
-        if (error instanceof AetherError) throw error;
         const aborted = error instanceof Error && error.name === "AbortError";
         const code = aborted ? (options.signal?.aborted ? "request_aborted" : "request_timeout") : "network_error";
         const message = code === "request_aborted"
@@ -135,6 +131,7 @@ export class IdentityTransport {
             : "Identity request failed";
         throw new AetherError({status: 0, code, message});
       }
+      return {response, payload: await readJson(response, request.successStatuses.includes(response.status))};
     } finally {
       clearTimeout(timeout);
       options.signal?.removeEventListener("abort", abort);
@@ -195,13 +192,19 @@ async function delay(milliseconds: number, signal?: AbortSignal): Promise<void> 
   });
 }
 
-async function readJson(response: Response): Promise<unknown> {
+async function readJson(response: Response, success: boolean): Promise<unknown> {
   if (response.status === 204) return undefined;
-  const text = await response.text();
+  let text: string;
+  try {
+    text = await response.text();
+  } catch {
+    throw new AetherError({status: response.status, code: "invalid_response", message: "Identity response could not be read"});
+  }
   if (!text) return undefined;
   try {
     return JSON.parse(text);
   } catch {
+    if (!success) return undefined;
     throw new AetherError({
       status: response.status,
       code: "invalid_response",
@@ -217,7 +220,7 @@ function errorFromResponse(
   omitDetails = false,
 ): AetherError {
   const envelope = isRecord(payload) ? payload.error : undefined;
-  const code = isRecord(envelope) && typeof envelope.code === "string"
+  const rawCode = isRecord(envelope) && typeof envelope.code === "string"
     ? envelope.code
     : typeof envelope === "string"
       ? envelope
@@ -225,7 +228,8 @@ function errorFromResponse(
   const rawMessage = isRecord(envelope) && typeof envelope.message === "string"
     ? envelope.message
     : `Identity request failed with HTTP ${response.status}`;
-  const message = redactions.reduce(
+  const code = omitDetails && !safeAuthErrorCodes.has(rawCode.toLowerCase()) ? "request_failed" : rawCode;
+  const message = omitDetails ? `Identity request failed with HTTP ${response.status}` : redactions.reduce(
     (value, secret) => secret ? value.replaceAll(secret, "[REDACTED]") : value,
     rawMessage,
   );
@@ -239,19 +243,19 @@ function errorFromResponse(
     status: response.status,
     code,
     message,
-    ...(requestId ? {requestId} : {}),
+    ...(!omitDetails && requestId ? {requestId} : {}),
     ...(!omitDetails && details !== undefined ? {details} : {}),
-    retry: retryMetadata(response),
+    retry: retryMetadata(response, !omitDetails),
   });
 }
 
-function retryMetadata(response: Response): RetryMetadata {
+function retryMetadata(response: Response, includeText = true): RetryMetadata {
   return {
     ...integerHeader(response, "retry-after", "retryAfterSeconds"),
     ...integerHeader(response, "ratelimit-limit", "rateLimitLimit"),
     ...integerHeader(response, "ratelimit-remaining", "rateLimitRemaining"),
     ...integerHeader(response, "ratelimit-reset", "rateLimitReset"),
-    ...(response.headers.get("quota-reset") ? {quotaReset: response.headers.get("quota-reset")!} : {}),
+    ...(includeText && response.headers.get("quota-reset") ? {quotaReset: response.headers.get("quota-reset")!} : {}),
   };
 }
 
@@ -263,5 +267,14 @@ function integerHeader(response: Response, header: string, property: keyof Retry
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+
+const safeAuthErrorCodes = new Set([
+  "invalid_request", "invalid_passwordless_request", "invalid_client", "invalid_grant",
+  "invalid_scope", "unauthorized_client", "unsupported_grant_type", "access_denied",
+  "invalid_target", "token_issuance_unavailable", "invalid_code", "code_already_used",
+  "code_expired", "invalid_redirect_uri", "invalid_code_verifier", "invalid_token",
+  "origin_not_allowed", "custom_completion_not_allowed", "rate_limited",
+  "temporarily_unavailable", "identity_role_unavailable", "revocation_backend_unavailable",
+]);

@@ -898,6 +898,15 @@
           "content": {
             "application/json": {
               "schema": {
+                "example": {
+                  "user_id": "11111111-1111-4111-8111-111111111111",
+                  "type": "ANNOUNCEMENT",
+                  "channels": [
+                    "in_app"
+                  ],
+                  "title": "Integration update",
+                  "body": "Your integration test is ready."
+                },
                 "type": "object",
                 "additionalProperties": false,
                 "required": [
@@ -1810,6 +1819,11 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "example": {
+                    "status": "queued",
+                    "message": "Notification dispatched to 1 channel(s)",
+                    "notification_id": "22222222-2222-4222-8222-222222222222"
+                  },
                   "type": "object",
                   "additionalProperties": false,
                   "required": [
@@ -2710,6 +2724,16 @@
                       "items": {
                         "allOf": [
                           {
+                            "example": {
+                              "slug": "sandbox-announcement",
+                              "name": "Sandbox announcement",
+                              "type": "ANNOUNCEMENT",
+                              "locale": "en",
+                              "version": 1,
+                              "category": "system",
+                              "push_title": "Integration update",
+                              "push_body": "Hello {{recipient}}. Your integration test is ready."
+                            },
                             "type": "object",
                             "additionalProperties": false,
                             "required": [
@@ -2798,6 +2822,16 @@
           "content": {
             "application/json": {
               "schema": {
+                "example": {
+                  "slug": "sandbox-announcement",
+                  "name": "Sandbox announcement",
+                  "type": "ANNOUNCEMENT",
+                  "locale": "en",
+                  "version": 1,
+                  "category": "system",
+                  "push_title": "Integration update",
+                  "push_body": "Hello {{recipient}}. Your integration test is ready."
+                },
                 "type": "object",
                 "additionalProperties": false,
                 "required": [
@@ -3693,6 +3727,16 @@
                 "schema": {
                   "allOf": [
                     {
+                      "example": {
+                        "slug": "sandbox-announcement",
+                        "name": "Sandbox announcement",
+                        "type": "ANNOUNCEMENT",
+                        "locale": "en",
+                        "version": 1,
+                        "category": "system",
+                        "push_title": "Integration update",
+                        "push_body": "Hello {{recipient}}. Your integration test is ready."
+                      },
                       "type": "object",
                       "additionalProperties": false,
                       "required": [
@@ -3782,6 +3826,16 @@
               "schema": {
                 "allOf": [
                   {
+                    "example": {
+                      "slug": "sandbox-announcement",
+                      "name": "Sandbox announcement",
+                      "type": "ANNOUNCEMENT",
+                      "locale": "en",
+                      "version": 1,
+                      "category": "system",
+                      "push_title": "Integration update",
+                      "push_body": "Hello {{recipient}}. Your integration test is ready."
+                    },
                     "type": "object",
                     "additionalProperties": false,
                     "required": [
@@ -3826,6 +3880,12 @@
                     }
                   },
                   {
+                    "example": {
+                      "locale": "en",
+                      "variables": {
+                        "recipient": "Test user"
+                      }
+                    },
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
@@ -4754,6 +4814,12 @@
           "content": {
             "application/json": {
               "schema": {
+                "example": {
+                  "locale": "en",
+                  "variables": {
+                    "recipient": "Test user"
+                  }
+                },
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
@@ -5682,6 +5748,12 @@
               "schema": {
                 "allOf": [
                   {
+                    "example": {
+                      "locale": "en",
+                      "variables": {
+                        "recipient": "Test user"
+                      }
+                    },
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
@@ -7450,6 +7522,16 @@
                 "schema": {
                   "allOf": [
                     {
+                      "example": {
+                        "slug": "sandbox-announcement",
+                        "name": "Sandbox announcement",
+                        "type": "ANNOUNCEMENT",
+                        "locale": "en",
+                        "version": 1,
+                        "category": "system",
+                        "push_title": "Integration update",
+                        "push_body": "Hello {{recipient}}. Your integration test is ready."
+                      },
                       "type": "object",
                       "additionalProperties": false,
                       "required": [
@@ -7550,6 +7632,16 @@
           "content": {
             "application/json": {
               "schema": {
+                "example": {
+                  "slug": "sandbox-announcement",
+                  "name": "Sandbox announcement",
+                  "type": "ANNOUNCEMENT",
+                  "locale": "en",
+                  "version": 1,
+                  "category": "system",
+                  "push_title": "Integration update",
+                  "push_body": "Hello {{recipient}}. Your integration test is ready."
+                },
                 "type": "object",
                 "additionalProperties": false,
                 "required": [
@@ -8445,6 +8537,16 @@
                 "schema": {
                   "allOf": [
                     {
+                      "example": {
+                        "slug": "sandbox-announcement",
+                        "name": "Sandbox announcement",
+                        "type": "ANNOUNCEMENT",
+                        "locale": "en",
+                        "version": 1,
+                        "category": "system",
+                        "push_title": "Integration update",
+                        "push_body": "Hello {{recipient}}. Your integration test is ready."
+                      },
                       "type": "object",
                       "additionalProperties": false,
                       "required": [
@@ -9421,6 +9523,20 @@
               "schema": {
                 "type": "object",
                 "additionalProperties": true
+              },
+              "example": {
+                "name": "Sandbox announcement",
+                "type": "ANNOUNCEMENT",
+                "channels": [
+                  "in_app"
+                ],
+                "template_slug": "sandbox-announcement",
+                "template_data": {
+                  "recipient": "Test user"
+                },
+                "target_user_ids": [
+                  "11111111-1111-4111-8111-111111111111"
+                ]
               }
             }
           }
@@ -13862,6 +13978,27 @@
               "schema": {
                 "type": "object",
                 "additionalProperties": true
+              },
+              "example": {
+                "name": "Scheduled sandbox announcement",
+                "category": "system",
+                "channels": [
+                  "INAPP"
+                ],
+                "template_slug": "sandbox-announcement",
+                "template_data": {
+                  "recipient": "Test user"
+                },
+                "audience": {
+                  "mode": "user_ids",
+                  "user_ids": [
+                    "11111111-1111-4111-8111-111111111111"
+                  ]
+                },
+                "schedule": {
+                  "kind": "one_shot",
+                  "at": "2030-01-01T09:00:00Z"
+                }
               }
             }
           }
@@ -15644,6 +15781,9 @@
               "schema": {
                 "type": "object",
                 "additionalProperties": true
+              },
+              "example": {
+                "name": "Revised sandbox announcement"
               }
             }
           }
@@ -24524,6 +24664,14 @@
               "schema": {
                 "type": "object",
                 "additionalProperties": true
+              },
+              "example": {
+                "mode": "byo",
+                "provider_priority": [
+                  "resend"
+                ],
+                "default_from_email": "notifications@example.com",
+                "default_from_name": "Example app"
               }
             }
           }
@@ -25420,6 +25568,11 @@
               "schema": {
                 "type": "object",
                 "additionalProperties": true
+              },
+              "example": {
+                "to": "test-recipient@example.com",
+                "subject": "Integration test",
+                "text": "Your integration test is ready."
               }
             }
           }
@@ -27236,6 +27389,15 @@
         "content": {
           "application/json": {
             "schema": {
+              "example": {
+                "user_id": "11111111-1111-4111-8111-111111111111",
+                "type": "ANNOUNCEMENT",
+                "channels": [
+                  "in_app"
+                ],
+                "title": "Integration update",
+                "body": "Your integration test is ready."
+              },
               "type": "object",
               "additionalProperties": false,
               "required": [
@@ -27306,6 +27468,16 @@
         "content": {
           "application/json": {
             "schema": {
+              "example": {
+                "slug": "sandbox-announcement",
+                "name": "Sandbox announcement",
+                "type": "ANNOUNCEMENT",
+                "locale": "en",
+                "version": 1,
+                "category": "system",
+                "push_title": "Integration update",
+                "push_body": "Hello {{recipient}}. Your integration test is ready."
+              },
               "type": "object",
               "additionalProperties": false,
               "required": [
@@ -27359,6 +27531,16 @@
             "schema": {
               "allOf": [
                 {
+                  "example": {
+                    "slug": "sandbox-announcement",
+                    "name": "Sandbox announcement",
+                    "type": "ANNOUNCEMENT",
+                    "locale": "en",
+                    "version": 1,
+                    "category": "system",
+                    "push_title": "Integration update",
+                    "push_body": "Hello {{recipient}}. Your integration test is ready."
+                  },
                   "type": "object",
                   "additionalProperties": false,
                   "required": [
@@ -27403,6 +27585,12 @@
                   }
                 },
                 {
+                  "example": {
+                    "locale": "en",
+                    "variables": {
+                      "recipient": "Test user"
+                    }
+                  },
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -27425,6 +27613,12 @@
         "content": {
           "application/json": {
             "schema": {
+              "example": {
+                "locale": "en",
+                "variables": {
+                  "recipient": "Test user"
+                }
+              },
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -27447,6 +27641,12 @@
             "schema": {
               "allOf": [
                 {
+                  "example": {
+                    "locale": "en",
+                    "variables": {
+                      "recipient": "Test user"
+                    }
+                  },
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -27490,6 +27690,15 @@
         "additionalProperties": true
       },
       "SendNotificationRequest": {
+        "example": {
+          "user_id": "11111111-1111-4111-8111-111111111111",
+          "type": "ANNOUNCEMENT",
+          "channels": [
+            "in_app"
+          ],
+          "title": "Integration update",
+          "body": "Your integration test is ready."
+        },
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -27553,6 +27762,11 @@
         }
       },
       "QueuedNotification": {
+        "example": {
+          "status": "queued",
+          "message": "Notification dispatched to 1 channel(s)",
+          "notification_id": "22222222-2222-4222-8222-222222222222"
+        },
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -27574,6 +27788,16 @@
         }
       },
       "TemplateWrite": {
+        "example": {
+          "slug": "sandbox-announcement",
+          "name": "Sandbox announcement",
+          "type": "ANNOUNCEMENT",
+          "locale": "en",
+          "version": 1,
+          "category": "system",
+          "push_title": "Integration update",
+          "push_body": "Hello {{recipient}}. Your integration test is ready."
+        },
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -27620,6 +27844,16 @@
       "Template": {
         "allOf": [
           {
+            "example": {
+              "slug": "sandbox-announcement",
+              "name": "Sandbox announcement",
+              "type": "ANNOUNCEMENT",
+              "locale": "en",
+              "version": 1,
+              "category": "system",
+              "push_title": "Integration update",
+              "push_body": "Hello {{recipient}}. Your integration test is ready."
+            },
             "type": "object",
             "additionalProperties": false,
             "required": [
@@ -27692,6 +27926,16 @@
             "items": {
               "allOf": [
                 {
+                  "example": {
+                    "slug": "sandbox-announcement",
+                    "name": "Sandbox announcement",
+                    "type": "ANNOUNCEMENT",
+                    "locale": "en",
+                    "version": 1,
+                    "category": "system",
+                    "push_title": "Integration update",
+                    "push_body": "Hello {{recipient}}. Your integration test is ready."
+                  },
                   "type": "object",
                   "additionalProperties": false,
                   "required": [
@@ -27756,6 +28000,12 @@
         }
       },
       "TemplateVariables": {
+        "example": {
+          "locale": "en",
+          "variables": {
+            "recipient": "Test user"
+          }
+        },
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -27771,6 +28021,16 @@
       "TemplatePreviewRequest": {
         "allOf": [
           {
+            "example": {
+              "slug": "sandbox-announcement",
+              "name": "Sandbox announcement",
+              "type": "ANNOUNCEMENT",
+              "locale": "en",
+              "version": 1,
+              "category": "system",
+              "push_title": "Integration update",
+              "push_body": "Hello {{recipient}}. Your integration test is ready."
+            },
             "type": "object",
             "additionalProperties": false,
             "required": [
@@ -27815,6 +28075,12 @@
             }
           },
           {
+            "example": {
+              "locale": "en",
+              "variables": {
+                "recipient": "Test user"
+              }
+            },
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -27832,6 +28098,12 @@
       "TemplateTestRequest": {
         "allOf": [
           {
+            "example": {
+              "locale": "en",
+              "variables": {
+                "recipient": "Test user"
+              }
+            },
             "type": "object",
             "additionalProperties": false,
             "properties": {
