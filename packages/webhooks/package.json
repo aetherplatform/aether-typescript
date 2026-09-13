@@ -1,6 +1,6 @@
 {
   "name": "@aetherplatform/webhooks",
-  "version": "0.1.0-beta.1.1",
+  "version": "0.1.0-beta.1.2",
   "description": "Typed Aether webhook management APIs and server-side delivery signature verification.",
   "license": "Apache-2.0",
   "author": "Aether",
@@ -24,7 +24,7 @@
   },
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@aetherplatform/core": "0.1.0-beta.1.1"
+    "@aetherplatform/core": "0.1.0-beta.1.2"
   },
   "repository": {
     "type": "git",

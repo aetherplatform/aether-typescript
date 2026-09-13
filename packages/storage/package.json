@@ -1,6 +1,6 @@
 {
   "name": "@aetherplatform/storage",
-  "version": "0.1.0-beta.1.1",
+  "version": "0.1.0-beta.1.2",
   "description": "Typed Aether Storage APIs with direct single-part and multipart transfer helpers.",
   "license": "Apache-2.0",
   "author": "Aether",
@@ -20,7 +20,7 @@
   },
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@aetherplatform/core": "0.1.0-beta.1.1"
+    "@aetherplatform/core": "0.1.0-beta.1.2"
   },
   "repository": {
     "type": "git",
