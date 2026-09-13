@@ -78,8 +78,9 @@ an existing version.
 - `0.1.0-rc.1` starts release-candidate validation.
 - `0.1.0` is the first non-prerelease release on the initial-development
   (`0.x`) line.
-- A materially expanded or intentionally incompatible preview starts a new
-  minor line, for example `0.2.0-beta.1`.
+- Advancing to a new minor preview, for example `0.2.0-beta.1`, requires an
+  explicit maintainer decision. The passwordless SDK update remains on the
+  current beta.1 line at `0.1.0-beta.1.2`, as selected by the maintainer.
 - Every incompatible preview change must be called out prominently in the
   changelog even though SemVer permits breaking changes before `1.0.0`.
 - Preview compatibility is best effort; there is no implied SLA or

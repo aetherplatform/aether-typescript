@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-beta.1.2
+
+### Patch Changes
+
+- @aetherplatform/core@0.1.0-beta.1.2
+
 ## 0.1.0-beta.1.1
 
 ### Patch Changes
