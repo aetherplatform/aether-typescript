@@ -91,7 +91,8 @@ function validResponse(operation: keyof Requests, response: unknown, transport: 
   if (!record(response)) return false;
   if (operation === "startPasswordless") {
     return nonempty(response.transaction) && nonempty(response.challenge_id) && response.expires_in === 300
-      && response.resend_after === 60 && response.transaction_expires_in === 600;
+      && Number.isInteger(response.resend_after) && Number(response.resend_after) >= 1
+      && Number(response.resend_after) <= 300 && response.transaction_expires_in === 600;
   }
   if (response.status === "authorized") return nonempty(response.code) && validState(response.state);
   if (operation === "completePasswordless") return response.status === "denied" && response.error === "access_denied" && validState(response.state);

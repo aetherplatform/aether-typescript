@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-beta.1.3
+
+### Patch Changes
+
+- Coordinate the fixed beta release with Identity configurable resend support.
+- @aetherplatform/core@0.1.0-beta.1.3
+
 ## 0.1.0-beta.1.2
 
 ### Patch Changes

@@ -4240,7 +4240,7 @@
           "Passwordless"
         ],
         "summary": "Send an email or SMS sign-in code",
-        "description": "Create an OAuth authorization transaction bound to the registered client context, exact redirect URI, scopes, state, nonce and S256 PKCE challenge. Unknown identifiers are represented by fingerprints. Resend only after an explicit user action by calling start again; it creates a new transaction and supersedes the previous pending challenge. The OTP expires after five minutes, the transaction after ten minutes, and resend requires a 60-second interval. Identifier/client, trusted source IP and client send limits apply. No automatic retries.",
+        "description": "Create an OAuth authorization transaction bound to the registered client context, exact redirect URI, scopes, state, nonce and S256 PKCE challenge. Unknown identifiers are represented by fingerprints. Resend only after an explicit user action by calling start again; it creates a new transaction and supersedes the previous pending challenge. The OTP expires after five minutes and the transaction after ten minutes. Resend uses the server-configured interval returned as resend_after (60 seconds by default, configurable from 1 to 300 seconds). Identifier/client, trusted source IP and client send limits still apply. No automatic retries.",
         "operationId": "startPasswordless",
         "security": [
           {
@@ -4372,7 +4372,9 @@
                     },
                     "resend_after": {
                       "type": "integer",
-                      "const": 60
+                      "minimum": 1,
+                      "maximum": 300,
+                      "description": "Server-configured resend interval in seconds for this challenge. Defaults to 60; clients must use the returned value and respect Retry-After on rate-limited requests."
                     },
                     "transaction_expires_in": {
                       "type": "integer",
@@ -5811,7 +5813,9 @@
           },
           "resend_after": {
             "type": "integer",
-            "const": 60
+            "minimum": 1,
+            "maximum": 300,
+            "description": "Server-configured resend interval in seconds for this challenge. Defaults to 60; clients must use the returned value and respect Retry-After on rate-limited requests."
           },
           "transaction_expires_in": {
             "type": "integer",

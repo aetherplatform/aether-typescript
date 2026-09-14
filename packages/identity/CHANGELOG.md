@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-beta.1.3
+
+### Patch Changes
+
+- Accept the server-provided passwordless resend interval from 1 to 300 seconds, including the existing 60-second default. Generate `resend_after` as a number and reject responses outside the contract. Applications must honor the returned interval; this is a server setting, not an SDK request option.
+- @aetherplatform/core@0.1.0-beta.1.3
+
 ## 0.1.0-beta.1.2
 
 ### Minor Changes
