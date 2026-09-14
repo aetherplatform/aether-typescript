@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-beta.1.3
+
+- Coordinate the fixed beta release with Identity configurable resend support; Core runtime behavior is unchanged.
+
 ## 0.1.0-beta.1.2
 
 - Coordinate the beta.1.2 release with the new Identity passwordless API; Core runtime behavior is unchanged.

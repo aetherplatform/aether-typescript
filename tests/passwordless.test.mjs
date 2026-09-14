@@ -15,6 +15,25 @@ const custom = {status: "custom_completion_required", continuation: "continuatio
 const token = {access_token: "access-secret", token_type: "Bearer", expires_in: 3600, refresh_token: "refresh-secret"};
 
 for (const confidential of [false, true]) {
+  test(`${confidential ? "confidential" : "public"} passwordless respects the server resend interval`, async () => {
+    for (const seconds of [1, 30, 60, 300, 0, -1, 301, 1.5, "30", null]) {
+      const Client = confidential ? ConfidentialIdentityClient : IdentityClient;
+      let calls = 0;
+      const client = new Client({baseUrl, clientId: "client-1", ...(confidential ? {clientSecret: "secret"} : {}), fetch: async () => {
+        calls += 1;
+        return Response.json({...challenge, resend_after: seconds}, {status: 202});
+      }});
+      if (Number.isInteger(seconds) && seconds >= 1 && seconds <= 300) {
+        assert.equal((await client.startPasswordless(start)).resend_after, seconds);
+      } else {
+        await assert.rejects(client.startPasswordless(start), (error) => error instanceof AetherError && error.code === "invalid_response");
+      }
+      assert.equal(calls, 1);
+    }
+  });
+}
+
+for (const confidential of [false, true]) {
   test(`${confidential ? "confidential" : "public"} passwordless journey uses the correct authentication and explicit outcomes`, async () => {
     const sent = [];
     const Client = confidential ? ConfidentialIdentityClient : IdentityClient;

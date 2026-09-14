@@ -1,6 +1,6 @@
 {
   "name": "@aetherplatform/notifications",
-  "version": "0.1.0-beta.1.2",
+  "version": "0.1.0-beta.1.3",
   "description": "Typed APIs for Aether notification sends, templates, broadcasts, campaigns, analytics, and email configuration.",
   "license": "Apache-2.0",
   "author": "Aether",
@@ -20,7 +20,7 @@
   },
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@aetherplatform/core": "0.1.0-beta.1.2"
+    "@aetherplatform/core": "0.1.0-beta.1.3"
   },
   "repository": {
     "type": "git",

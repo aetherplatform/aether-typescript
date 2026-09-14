@@ -11,6 +11,7 @@
   },
   "changesets": [
     "public-passwordless-authentication",
-    "safe-response-and-retries"
+    "safe-response-and-retries",
+    "configurable-passwordless-resend"
   ]
 }

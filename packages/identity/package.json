@@ -1,6 +1,6 @@
 {
   "name": "@aetherplatform/identity",
-  "version": "0.1.0-beta.1.2",
+  "version": "0.1.0-beta.1.3",
   "description": "OAuth 2.0 Authorization Code with PKCE and OpenID Connect helpers for Aether Identity.",
   "license": "Apache-2.0",
   "author": "Aether",
@@ -24,7 +24,7 @@
   },
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@aetherplatform/core": "0.1.0-beta.1.2"
+    "@aetherplatform/core": "0.1.0-beta.1.3"
   },
   "repository": {
     "type": "git",

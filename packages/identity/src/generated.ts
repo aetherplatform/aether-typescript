@@ -3,7 +3,7 @@
 
 export type PasswordlessStartRequest = { client_id?: string; identifier: string; channel: "email" | "sms"; redirect_uri: string; scope?: string; state?: string; nonce?: string; code_challenge: string; code_challenge_method: "S256"; response_type?: "code"; };
 
-export type PasswordlessStartResponse = { transaction: string; challenge_id: string; expires_in: 300; resend_after: 60; transaction_expires_in: 600; };
+export type PasswordlessStartResponse = { transaction: string; challenge_id: string; expires_in: 300; resend_after: number; transaction_expires_in: 600; };
 
 export type PasswordlessVerifyRequest = { client_id?: string; transaction: string; challenge_id: string; identifier: string; channel: "email" | "sms"; code: string; code_verifier: string; };
 

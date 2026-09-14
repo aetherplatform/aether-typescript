@@ -122,7 +122,8 @@ Aether SSO session. Custom completion is available only through registered polic
 The same three passwordless methods exist on `ConfidentialIdentityClient`, using
 its backend credentials through HTTP Basic.
 
-`startPasswordless` also performs an explicit resend. Respect `resend_after` and a
+`startPasswordless` also performs an explicit resend. Respect the server's
+`resend_after` (60 seconds by default, configurable from 1 to 300 seconds) and a
 `429` error's `retry.retryAfterSeconds`; resending supersedes the pending challenge
 and returns a new transaction. Codes expire after five minutes and transactions
 after ten minutes. Sending, verifying, completing, code exchange and refresh never
