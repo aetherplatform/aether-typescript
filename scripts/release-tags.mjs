@@ -1,6 +1,8 @@
 import {setTimeout as sleep} from "node:timers/promises";
 
-export async function waitForReleaseTags(release, runNpm, {attempts = 25, delayMs = 5_000, wait = sleep} = {}) {
+// npm can accept a publication before its processing queue exposes the tags.
+// Allow ten minutes for that read-only verification to converge.
+export async function waitForReleaseTags(release, runNpm, {attempts = 121, delayMs = 5_000, wait = sleep} = {}) {
   for (let attempt = 1; ; attempt += 1) {
     try {
       verifyReleaseTags(release, runNpm);
