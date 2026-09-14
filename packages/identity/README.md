@@ -47,8 +47,8 @@ authentication routes, service-JWT signing, or Aether session internals.
 
 ## Public passwordless beta
 
-This API is an unreleased beta candidate; it is not included in the published
-`0.1.0-beta.1.1` package.
+These APIs are included starting with `0.1.0-beta.1.2`. The earlier
+`0.1.0-beta.1.1` package does not include passwordless methods.
 
 The public client uses the configured Identity/auth base URL and an operator-enabled
 client ID. It never needs a secret. Email/SMS delivery must be configured in that
