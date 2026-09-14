@@ -37,7 +37,7 @@ The first public release contains:
 - `@aetherplatform/storage`
 - `@aetherplatform/webhooks`
 
-All six packages are published at `0.1.0-beta.1.2` as of 2026-09-13. Every new
+All six packages are published at `0.1.0-beta.1.3` as of 2026-09-14. Every new
 release requires their customer contracts and hosted sandbox checks to pass
 together. Package publication is not evidence that its backing hosted API is
 currently available.
@@ -121,8 +121,9 @@ The expected first progression is:
 While a package has only preview versions, `next` and `latest` may both point
 at its current approved preview. This accommodates npm retaining `latest` on
 first publication and rejecting its deletion. The earlier beta.1.1 fix release used
-both tags; beta.1.2 is published under `next`, with maintainer-approved `latest`
-alignment performed separately after publication. Once any non-prerelease version exists, `latest`
+both tags; the current beta.1.3 preview is verified on both `next` and `latest`.
+Maintainer-authorized tag alignment is separate from publication. Once any
+non-prerelease version exists, `latest`
 must point to a non-prerelease; later betas continue under `next` and preserve
 stable `latest`. Verify both tags after publication. Automated tag readback
 never attempts to delete npm's implicit tag. Security fixes are released
@@ -261,12 +262,22 @@ not retained as a rollback credential.
 
 ## Current Publication Evidence
 
-The protected [release verification](https://github.com/aetherplatform/aether-typescript/actions/runs/34786793039) passed for the current preview. All six packages use trusted publishing; the temporary bootstrap token has been removed.
+The protected [release verification](https://github.com/aetherplatform/aether-typescript/actions/runs/34843073358) passed for the current preview. All six packages use trusted publishing; the temporary bootstrap token has been removed.
 
 The original six `0.1.0-beta.1` versions were published on 2026-09-12. The
-current release is `0.1.0-beta.1.2`, retaining the maintainer-requested beta.1
-series and including passwordless APIs. The six exact registry versions passed
-clean external installation, browser-safe exports and browser type checking. npm rejected removal of its initial `latest` tag; the maintainer
+current release is `0.1.0-beta.1.3`, retaining the maintainer-requested beta.1
+series and accepting configurable passwordless resend intervals. The six exact
+registry versions passed clean external installation, browser-safe exports,
+and browser type checking. npm verified all six registry signatures and
+provenance attestations. The installed Identity package also passed hosted
+discovery and JWKS checks. Both `next` and `latest` resolve to beta.1.3.
+
+The first protected attempt published Core, then exceeded the old two-minute
+registry processing wait. The successful resumed release preserved Core and
+published the other five packages using a bounded ten-minute readback window.
+Existing immutable versions were not republished.
+
+npm rejected removal of its initial `latest` tag; the maintainer
 approved keeping both `next` and `latest` on the fixed preview while no stable
 release exists. A later stable version must be protected from beta tag moves.
 Registry tags are read back after publication, allowing a bounded propagation
