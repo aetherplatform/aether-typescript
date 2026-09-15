@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-beta.1.4
+
+- Align webhook replay with queued HTTP 202 responses.
+- Correct Notifications template request channels and nested preview response types.
+- Keep all six beta packages on the same patch version.
+
 ## 0.1.0-beta.1.3
 
 ### Patch Changes
