@@ -7,19 +7,21 @@ export type SendNotificationRequest = { user_id: string; type: string; channels:
 
 export type QueuedNotification = { status: "queued"; message: string; notification_id: string; };
 
-export type TemplateWrite = { slug: string; name: string; type?: string; locale?: string; version?: number; category?: string; push_title?: string; push_body?: string; email_subject?: string; email_html?: string; sms_body?: string; };
+export type TemplateWrite = { slug: string; name: string; type?: string; locale?: string; version?: number; category?: string; push_title?: string; push_body?: string; email_subject?: string; email_html?: string; email_text?: string; inapp_title?: string; inapp_body?: string; whatsapp_body?: string; variables?: Array<string>; sms_body?: string; };
 
-export type Template = (TemplateWrite) & ({ id: string; is_active: boolean; });
+export type Template = { id: string; slug: string; name: string; type?: string; version?: number; locale?: string; category?: string | null; push_title?: string | null; push_body?: string | null; email_subject?: string | null; email_html?: string | null; email_text?: string | null; sms_body?: string | null; inapp_title?: string | null; inapp_body?: string | null; whatsapp_body?: string | null; is_active: boolean; created_at?: string; updated_at?: string; };
 
 export type TemplateList = { templates: Array<Template>; };
 
 export type TemplateVariables = { locale?: string; variables?: EmailConfiguration; };
 
-export type TemplatePreviewRequest = (TemplateWrite) & (TemplateVariables);
+export type TemplatePreviewRequest = { slug: string; locale?: string; variables?: EmailConfiguration; };
 
-export type TemplateTestRequest = (TemplateVariables) & ({ user_id: string; channels: Array<string>; });
+export type TemplateTestRequest = { user_id: string; channels: Array<"push" | "sms" | "email" | "in_app">; email?: string; phone?: string; device_token?: string; platform?: string; locale?: string; variables?: EmailConfiguration; };
 
-export type TemplatePreview = { locale?: string; version?: number; push_title?: string; push_body?: string; email_subject?: string; email_html?: string; sms_body?: string; [key: string]: unknown; };
+export type TemplatePreview = { slug: string; locale: string; rendered: RenderedTemplate; };
+
+export type RenderedTemplate = { title?: string | null; body?: string | null; email_subject?: string | null; email_html?: string | null; email_text?: string | null; sms_body?: string | null; inapp_title?: string | null; inapp_body?: string | null; whatsapp_body?: string | null; version?: number | null; locale?: string; category?: string | null; source?: "db" | "default"; };
 
 export type Resource = { id: string; [key: string]: unknown; };
 
@@ -441,7 +443,7 @@ export const operations = {
     requiredCapability: "notifications:templates/{slug}:manage",
     availability: ["sandbox","live"],
     idempotency: "unsupported",
-    successStatuses: [200],
+    successStatuses: [200,202],
   },
   updateCampaign: {
     method: "PATCH",

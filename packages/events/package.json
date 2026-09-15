@@ -1,6 +1,6 @@
 {
   "name": "@aetherplatform/events",
-  "version": "0.1.0-beta.1.3",
+  "version": "0.1.0-beta.1.4",
   "description": "Typed read-only access to the Aether event catalog and governed schemas.",
   "license": "Apache-2.0",
   "author": "Aether",
@@ -20,7 +20,7 @@
   },
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@aetherplatform/core": "0.1.0-beta.1.3"
+    "@aetherplatform/core": "0.1.0-beta.1.4"
   },
   "repository": {
     "type": "git",

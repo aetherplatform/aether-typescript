@@ -286,7 +286,7 @@ export const operations = {
     requiredCapability: "webhooks:deliveries/{id}:replay",
     availability: ["sandbox","live"],
     idempotency: "unsupported",
-    successStatuses: [200],
+    successStatuses: [202],
   },
   rotateInboundEndpointSecret: {
     method: "POST",

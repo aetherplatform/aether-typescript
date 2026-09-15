@@ -204,7 +204,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -235,6 +237,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -274,7 +280,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -305,6 +313,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -369,7 +381,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -400,6 +414,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -454,7 +472,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -485,6 +505,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -645,7 +669,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -676,6 +702,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -715,7 +745,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -746,6 +778,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -810,7 +846,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -841,6 +879,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -895,7 +937,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -926,6 +970,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -1062,7 +1110,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -1093,6 +1143,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -1132,7 +1186,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -1163,6 +1219,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -1227,7 +1287,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -1258,6 +1320,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -1312,7 +1378,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -1343,6 +1411,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -1488,7 +1560,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -1519,6 +1593,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -1605,7 +1683,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -1636,6 +1716,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -1675,7 +1759,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -1706,6 +1792,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -1770,7 +1860,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -1801,6 +1893,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -1855,7 +1951,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -1886,6 +1984,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -2071,7 +2173,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -2102,6 +2206,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -2155,7 +2263,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -2186,6 +2296,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -2272,7 +2386,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -2303,6 +2419,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -2342,7 +2462,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -2373,6 +2495,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -2437,7 +2563,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -2468,6 +2596,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -2522,7 +2654,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -2553,6 +2687,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -2681,7 +2819,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -2712,6 +2852,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -2798,7 +2942,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -2829,6 +2975,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -2868,7 +3018,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -2899,6 +3051,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -2963,7 +3119,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -2994,6 +3152,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -3048,7 +3210,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -3079,6 +3243,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -3239,7 +3407,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -3270,6 +3440,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -3356,7 +3530,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -3387,6 +3563,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -3426,7 +3606,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -3457,6 +3639,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -3521,7 +3707,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -3552,6 +3740,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -3606,7 +3798,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -3637,6 +3831,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -3747,7 +3945,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -3778,6 +3978,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -3825,7 +4029,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -3856,6 +4062,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -3942,7 +4152,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -3973,6 +4185,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -4012,7 +4228,9 @@
                               "properties": {
                                 "code": {
                                   "type": "string",
-                                  "enum": [
+                                  "minLength": 1,
+                                  "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                                  "examples": [
                                     "bad_request",
                                     "unauthorized",
                                     "token_revoked",
@@ -4043,6 +4261,10 @@
                                   "examples": [
                                     "req_0196f13dd5337a489ab0c10c6f9fa473"
                                   ]
+                                },
+                                "details": {
+                                  "type": "object",
+                                  "additionalProperties": true
                                 }
                               }
                             }
@@ -4107,7 +4329,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -4138,6 +4362,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }
@@ -4192,7 +4420,9 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "enum": [
+                          "minLength": 1,
+                          "description": "Extensible application code. Preserve exact case and handle unknown codes using HTTP status and message.",
+                          "examples": [
                             "bad_request",
                             "unauthorized",
                             "token_revoked",
@@ -4223,6 +4453,10 @@
                           "examples": [
                             "req_0196f13dd5337a489ab0c10c6f9fa473"
                           ]
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": true
                         }
                       }
                     }

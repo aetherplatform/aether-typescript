@@ -10,6 +10,43 @@ const tokenProvider = {
   getToken: async () => ({accessToken: "sdk-token", expiresAt: Date.now() + 60_000}),
 };
 
+test("template preview keeps nested rendering and template tests accept queued channels", async () => {
+  const preview = {slug: "welcome", locale: "en", rendered: {email_subject: "Hello Ada", sms_body: null}};
+  const client = new NotificationsClient({
+    baseUrl: "https://api.example", tokenProvider,
+    fetch: async (url, request) => {
+      if (String(url).endsWith("/preview")) {
+        assert.deepEqual(JSON.parse(request.body), {slug: "welcome", variables: {name: "Ada"}});
+        return Response.json(preview);
+      }
+      assert.deepEqual(JSON.parse(request.body), {user_id: "user_1", channels: ["email", "sms"]});
+      return Response.json({status: "queued", notification_id: "notification_1"}, {status: 202});
+    },
+  });
+  assert.deepEqual(await client.request("previewNotificationTemplateBody", {
+    body: {slug: "welcome", variables: {name: "Ada"}},
+  }), preview);
+  assert.deepEqual(await client.request("testNotificationTemplate", {
+    path: {slug: "welcome"}, body: {user_id: "user_1", channels: ["email", "sms"]},
+  }), {status: "queued", notification_id: "notification_1"});
+});
+
+test("a durably queued webhook replay returns its attempt without another request", async () => {
+  let requests = 0;
+  const client = new WebhooksClient({
+    baseUrl: "https://api.example", tokenProvider,
+    fetch: async (url, request) => {
+      requests += 1;
+      assert.equal(String(url), "https://api.example/v1/webhooks/deliveries/delivery_1/replay");
+      assert.equal(request.method, "POST");
+      return Response.json({status: "queued", attempt_id: "attempt_1"}, {status: 202});
+    },
+  });
+  assert.deepEqual(await client.request("replayWebhookDelivery", {path: {id: "delivery_1"}}),
+    {status: "queued", attempt_id: "attempt_1"});
+  assert.equal(requests, 1);
+});
+
 test("Webhooks retries only with a nonblank idempotency key in the serialized body", async () => {
   for (const body of [
     {type: "example", data: {}},
