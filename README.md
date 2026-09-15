@@ -2,14 +2,14 @@
 
 This workspace contains the TypeScript SDK for the Aether managed platform.
 Core, Identity, Events, Notifications, Storage, and Webhooks are published under
-the `@aetherplatform` scope at **`0.1.0-beta.1.3`**. As of 2026-09-14,
+the `@aetherplatform` scope at **`0.1.0-beta.1.4`**. As of 2026-09-15,
 `next` and `latest` point to this preview. Pin the exact version; npm tags do not imply
 a stable release.
 Use this corrected version for new integrations and pin the version during
 evaluation:
 
 ```sh
-npm install --save-exact @aetherplatform/events@0.1.0-beta.1.3
+npm install --save-exact @aetherplatform/events@0.1.0-beta.1.4
 ```
 
 Install the platform packages you need; each depends on the matching Core
@@ -29,6 +29,14 @@ remains unverified.
 from 1 through 300 seconds. The default remains 60 seconds. Use the returned
 `resend_after` value for the countdown, and upgrade consumers before enabling
 a nondefault interval in Identity.
+
+Beta.1.4 corrects Notifications template request and nested rendering types,
+broadcast responses and the terminal `CANCELLED` state, and Webhooks creation
+and replay responses. Subscription creation returns its signing secret once;
+reads omit it. Replay and queued template tests accept HTTP 202. Consumers of
+the earlier template preview types should update to the nested `rendered`
+object. Bulk email/SMS/WhatsApp broadcasts remain unsupported and fail before
+starting; direct sends with explicit contacts are separate operations.
 
 The SDK contains only public wire contracts and customer-safe behavior. It does
 not contain service-JWT signing, Aether runtime modules, NATS subjects,
@@ -81,7 +89,7 @@ The one-time `.github/workflows/bootstrap-release.yml` workflow is disabled and
 its temporary npm token has been removed. All six packages have `release.yml`
 configured as their trusted publisher, and `AETHER_SDK_RELEASE_ENABLED=true`
 enables the permanent workflow. It rejects npm tokens and uses only GitHub OIDC.
-See the [protected verification run](https://github.com/aetherplatform/aether-typescript/actions/runs/34843073358)
+See the [protected verification run](https://github.com/aetherplatform/aether-typescript/actions/runs/34978592268)
 for the completed release checks. npm exposes provenance for each published
 package version.
 
